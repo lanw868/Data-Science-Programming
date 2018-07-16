@@ -6,15 +6,12 @@ NTU CS+X 全國夏季學院 資料科學程式設計
 學號 B10432032 (台科大)
 
 ### Week 1
----
 [投影片](https://goo.gl/uGUiJk)
 
 ### Week 2
----
 [投影片](https://goo.gl/UCtgwF)
 
 ### Week 3
----
 [投影片](https://goo.gl/)
 
 
