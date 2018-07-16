@@ -8,12 +8,12 @@ https://www.datacamp.com/courses/free-introduction-to-r
 
 ###  **1. 向量 (vector)**
 
-####**宣告**
+#### **宣告**
 ```{r}
 poker_vector <- c(140, -50, 20, -120, 240)
 ```
 
-####**命名**
+#### **命名**
 ```{r}
 days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
 names(poker_vector) <- days_vector
@@ -46,13 +46,13 @@ poker_midweek <- poker_vector[2:4]
 matrix(1:9, byrow = TRUE, nrow = 3)
 ```
 
-####**命名**
+#### **命名**
 ```{r, eval=FALSE}
 rownames(my_matrix) <- row_names_vector
 colnames(my_matrix) <- col_names_vector
 ```
 
-####**rowSums**
+#### **rowSums**
 ```{r}
 box_office <- c(460.998, 314.4, 290.475, 247.900, 309.306, 165.8)
 star_wars_matrix <- matrix(box_office, nrow = 3, byrow = TRUE,
@@ -63,17 +63,17 @@ star_wars_matrix <- matrix(box_office, nrow = 3, byrow = TRUE,
 worldwide_vector <- rowSums(star_wars_matrix)
 ```
 
-####**cbind  再多加一欄**
+#### **cbind  再多加一欄**
 ```{r, eval=FALSE}
 big_matrix <- cbind(matrix1, matrix2, vector1...)
 ```
 
-####**rbind**
+#### **rbind**
 ```{r, eval=FALSE}
 all_wars_matrix <- rbind(star_wars_matrix, star_wars_matrix2)
 ```
 
-####**乘法**
+#### **乘法**
 
 如同 `2 * my_matrix` 會將 `my_matrix` 中的每個元素都乘以 2， `my_matrix1 * my_matrix2` 則是將對應相同位置的元素作乘法運算。
 
