@@ -1,0 +1,202 @@
+##HW1
+__2018/07/15__
+
+__Introduction to R (R 語言導論)__
+
+https://www.datacamp.com/courses/free-introduction-to-r
+
+
+###  **1. 向量 (vector)**
+
+####**宣告**
+```{r}
+poker_vector <- c(140, -50, 20, -120, 240)
+```
+
+####**命名**
+```{r}
+days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+names(poker_vector) <- days_vector
+```
+
+```{r echo=FALSE}
+poker_vector
+```
+
+
+**注意第一個元素的索引值是 1，不像其他程式語言第一個元素的索引值是 0。**
+
+* 要選擇第一個元素就輸入 poker_vector[1] ，要選擇第二個元素就輸入 poker_vector[2] ...等。
+
+* poker_vector[2:4]。注意 2:4 要擺在中括號裡面才能選出第二至第四個元素。
+```{r}
+poker_midweek <- poker_vector[c(2,3,4)]
+```
+or
+```{r}
+poker_midweek <- poker_vector[2:4]
+```
+
+
+
+### **2.  矩陣 (matrix)**
+
+####**宣告**
+```{r}
+matrix(1:9, byrow = TRUE, nrow = 3)
+```
+
+####**命名**
+```{r, eval=FALSE}
+rownames(my_matrix) <- row_names_vector
+colnames(my_matrix) <- col_names_vector
+```
+
+####**rowSums**
+```{r}
+box_office <- c(460.998, 314.4, 290.475, 247.900, 309.306, 165.8)
+star_wars_matrix <- matrix(box_office, nrow = 3, byrow = TRUE,
+                           dimnames = list(c("A New Hope", "The Empire Strikes Back", "Return of the Jedi"), 
+                                           c("US", "non-US")))
+
+# 計算全球票房收入
+worldwide_vector <- rowSums(star_wars_matrix)
+```
+
+####**cbind  再多加一欄**
+```{r, eval=FALSE}
+big_matrix <- cbind(matrix1, matrix2, vector1...)
+```
+
+####**rbind**
+```{r, eval=FALSE}
+all_wars_matrix <- rbind(star_wars_matrix, star_wars_matrix2)
+```
+
+####**乘法**
+
+如同 `2 * my_matrix` 會將 `my_matrix` 中的每個元素都乘以 2， `my_matrix1 * my_matrix2` 則是將對應相同位置的元素作乘法運算。
+
+__標準矩陣運算子要使用 `%*%` __
+
+
+### **3. 因素向量 (factor)**
+```{r}
+theory <- "factors for categorical variables"
+```
+
+#### **無序or有序**
+```{r}
+# 動物
+animals_vector <- c("Elephant", "Giraffe", "Donkey", "Horse")
+factor_animals_vector <- factor(animals_vector)
+factor_animals_vector
+
+# 溫度
+temperature_vector <- c("High", "Low", "High","Low", "Medium")
+factor_temperature_vector <- factor(temperature_vector, order = TRUE, levels = c("Low", "Medium", "High"))
+factor_temperature_vector
+```
+
+#### **重新指派名稱**
+```{r}
+# 建立 factor_survey_vector
+survey_vector <- c("M", "F", "F", "M", "M")
+factor_survey_vector <- factor(survey_vector)
+
+# 指定 factor_survey_vector 的名稱
+levels(factor_survey_vector) <- c("Female", "Male")
+
+factor_survey_vector
+```
+
+#### **摘要**
+```{r}
+summary(survey_vector)
+
+summary(factor_survey_vector)
+```
+
+### **4. 資料框**
+
+* `head()`, `tail()`
+* `str()`
+* `data.frame()`
+* `order()`
+
+
+#### **選擇特定欄位**
+```{r, eval=FALSE}
+planets_df[,3]
+planets_df[,"diameter"]
+```
+or
+```{r, eval=FALSE}
+planets_df$diameter
+```
+
+#### **設定條件**
+```{r, eval=FALSE}
+subset(my_df, subset = some_condition)
+```
+
+#### **排序**
+```{r}
+a <- c(100, 10, 1000)
+order(a)
+
+a[order(a)]
+```
+
+*Example*
+```{r, include=FALSE}
+# 宣告向量
+name <- c("Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune")
+type <- c("Terrestrial planet", "Terrestrial planet", "Terrestrial planet", 
+          "Terrestrial planet", "Gas giant", "Gas giant", "Gas giant", "Gas giant")
+diameter <- c(0.382, 0.949, 1, 0.532, 11.209, 9.449, 4.007, 3.883)
+rotation <- c(58.64, -243.02, 1, 1.03, 0.41, 0.43, -0.72, 0.67)
+rings <- c(FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE)
+
+# 由這些向量建立資料框
+planets_df <- data.frame(name, type, diameter, rotation, rings)
+```
+
+
+```{r}
+# 使用 order() 建立 positions
+positions <-  order(planets_df$diameter)
+positions
+
+# 使用 positions 排序 planets_df
+planets_df[positions,]
+
+```
+
+### **5.清單 (list)**
+* `list()`
+
+
+#### **命名**
+```{r, eval=FALSE}
+my_list <- list(name1 = your_comp1, 
+                name2 = your_comp2)
+```
+or
+```{r, eval=FALSE}
+my_list <- list(your_comp1, your_comp2)
+names(my_list) <- c("name1", "name2")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
