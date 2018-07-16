@@ -1,9 +1,16 @@
-## HW1
-__2018/07/15__
 
-__Introduction to R (R 語言導論)__
+---
+title: "HW1"
+output: html_document
+date: 2018/07/15
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-https://www.datacamp.com/courses/free-introduction-to-r
+
+[__Introduction to R (R 語言導論)__](https://www.datacamp.com/courses/free-introduction-to-r)
+
 
 
 ###  **1. 向量 (vector)**
