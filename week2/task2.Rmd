@@ -3,8 +3,8 @@ title: "TextMining"
 output: html_document
 date: 2018/07/17
 ---
-### __1. ¦¬¶°¤å¥»__ 
-¨ú¦ÛPTT WorldCupª© 
+### __1. æ”¶é›†æ–‡æœ¬__ 
+å–è‡ªPTT WorldCupç‰ˆ 
 ```{r, eval=FALSE}
 source('pttTestFunction.R')
 id = c(1367:1377)
@@ -15,9 +15,9 @@ mapply(pttTestFunction,
        URL = URL, filename = filename)
 ```
 
-### __2. ¸ê®Æ²M²z__
+### __2. è³‡æ–™æ¸…ç†__
 
-¹w¥ı¦w¸Ë©Ò»İªº®M¥ó¥] & §R°£µL·N¸qªº¦rµü
+é å…ˆå®‰è£æ‰€éœ€çš„å¥—ä»¶åŒ… & åˆªé™¤ç„¡æ„ç¾©çš„å­—è©
 ```{r}
 rm(list=ls(all.names = TRUE))
 library(NLP)
@@ -29,54 +29,54 @@ library(wordcloud)
 filenames <- list.files(getwd(), pattern="*.txt")
 files <- lapply(filenames, readLines)
 docs <- Corpus(VectorSource(files))
-#²¾°£¥i¯à¦³°İÃDªº²Å¸¹
+#ç§»é™¤å¯èƒ½æœ‰å•é¡Œçš„ç¬¦è™Ÿ
 toSpace <- content_transformer(function(x, pattern) {
   return (gsub(pattern, " ", x))
 }
 )
-docs <- tm_map(docs, toSpace, "¡°")
-docs <- tm_map(docs, toSpace, "¡»")
-docs <- tm_map(docs, toSpace, "¡E")
-docs <- tm_map(docs, toSpace, "ªº")
-docs <- tm_map(docs, toSpace, "§Ú")
-docs <- tm_map(docs, toSpace, "¤F")
-docs <- tm_map(docs, toSpace, "±i")
-docs <- tm_map(docs, toSpace, "¿ú")
-docs <- tm_map(docs, toSpace, "±À")
-docs <- tm_map(docs, toSpace, "¼N")
-docs <- tm_map(docs, toSpace, "¹ô")
-docs <- tm_map(docs, toSpace, "´N")
-docs <- tm_map(docs, toSpace, "¦³")
-docs <- tm_map(docs, toSpace, "¤]")
-docs <- tm_map(docs, toSpace, "³£")
-docs <- tm_map(docs, toSpace, "¤£")
-docs <- tm_map(docs, toSpace, "¬O")
-docs <- tm_map(docs, toSpace, "¦b")
-docs <- tm_map(docs, toSpace, "¨S")
-docs <- tm_map(docs, toSpace, "¬İ")
-docs <- tm_map(docs, toSpace, "«Ü")
-docs <- tm_map(docs, toSpace, "§A")
-docs <- tm_map(docs, toSpace, "°Õ")
-docs <- tm_map(docs, toSpace, "­n")
-docs <- tm_map(docs, toSpace, "°Ú")
-docs <- tm_map(docs, toSpace, "³Q")
-docs <- tm_map(docs, toSpace, "¦ı")
-docs <- tm_map(docs, toSpace, "¸ò")
-docs <- tm_map(docs, toSpace, "¶Ü")
-docs <- tm_map(docs, toSpace, "§a")
-docs <- tm_map(docs, toSpace, "¶R")
-docs <- tm_map(docs, toSpace, "·|")
-docs <- tm_map(docs, toSpace, "¦n")
-docs <- tm_map(docs, toSpace, "ÁÙ")
-docs <- tm_map(docs, toSpace, "Àò±o")
-docs <- tm_map(docs, toSpace, "®¥³ß")
-docs <- tm_map(docs, toSpace, "¬İªO")
-docs <- tm_map(docs, toSpace, "§@ªÌ")
-docs <- tm_map(docs, toSpace, "µo«H¯¸")
-docs <- tm_map(docs, toSpace, "§å½ğ½ğ¹ê·~§{")
+docs <- tm_map(docs, toSpace, "â€»")
+docs <- tm_map(docs, toSpace, "â—†")
+docs <- tm_map(docs, toSpace, "â€§")
+docs <- tm_map(docs, toSpace, "çš„")
+docs <- tm_map(docs, toSpace, "æˆ‘")
+docs <- tm_map(docs, toSpace, "äº†")
+docs <- tm_map(docs, toSpace, "å¼µ")
+docs <- tm_map(docs, toSpace, "éŒ¢")
+docs <- tm_map(docs, toSpace, "æ¨")
+docs <- tm_map(docs, toSpace, "å™“")
+docs <- tm_map(docs, toSpace, "å¹£")
+docs <- tm_map(docs, toSpace, "å°±")
+docs <- tm_map(docs, toSpace, "æœ‰")
+docs <- tm_map(docs, toSpace, "ä¹Ÿ")
+docs <- tm_map(docs, toSpace, "éƒ½")
+docs <- tm_map(docs, toSpace, "ä¸")
+docs <- tm_map(docs, toSpace, "æ˜¯")
+docs <- tm_map(docs, toSpace, "åœ¨")
+docs <- tm_map(docs, toSpace, "æ²’")
+docs <- tm_map(docs, toSpace, "çœ‹")
+docs <- tm_map(docs, toSpace, "å¾ˆ")
+docs <- tm_map(docs, toSpace, "ä½ ")
+docs <- tm_map(docs, toSpace, "å•¦")
+docs <- tm_map(docs, toSpace, "è¦")
+docs <- tm_map(docs, toSpace, "å•Š")
+docs <- tm_map(docs, toSpace, "è¢«")
+docs <- tm_map(docs, toSpace, "ä½†")
+docs <- tm_map(docs, toSpace, "è·Ÿ")
+docs <- tm_map(docs, toSpace, "å—")
+docs <- tm_map(docs, toSpace, "å§")
+docs <- tm_map(docs, toSpace, "è²·")
+docs <- tm_map(docs, toSpace, "æœƒ")
+docs <- tm_map(docs, toSpace, "å¥½")
+docs <- tm_map(docs, toSpace, "é‚„")
+docs <- tm_map(docs, toSpace, "ç²å¾—")
+docs <- tm_map(docs, toSpace, "æ­å–œ")
+docs <- tm_map(docs, toSpace, "çœ‹æ¿")
+docs <- tm_map(docs, toSpace, "ä½œè€…")
+docs <- tm_map(docs, toSpace, "ç™¼ä¿¡ç«™")
+docs <- tm_map(docs, toSpace, "æ‰¹è¸¢è¸¢å¯¦æ¥­åŠ")
 docs <- tm_map(docs, toSpace, "[a-zA-Z]")
-#²¾°£¼ĞÂI²Å¸¹ (punctuation)
-#²¾°£¼Æ¦r (digits)¡BªÅ¥Õ (white space)
+#ç§»é™¤æ¨™é»ç¬¦è™Ÿ (punctuation)
+#ç§»é™¤æ•¸å­— (digits)ã€ç©ºç™½ (white space)
 docs <- tm_map(docs, removePunctuation)
 docs <- tm_map(docs, removeNumbers)
 docs <- tm_map(docs, stripWhitespace)
@@ -84,7 +84,7 @@ docs
 ```
 
 
-### __3. Â_µü & µüÀW¯x°}__
+### __3. æ–·è© & è©é »çŸ©é™£__
 ```{r}
 mixseg = worker()
 jieba_tokenizer=function(d){
@@ -98,7 +98,7 @@ kable(head(freqFrame, 10), format = "markdown")
 ```
 
 
-### __4. ¤å¦r¶³__
+### __4. æ–‡å­—é›²__
 ```{r}
 wordcloud(freqFrame$Var1,freqFrame$Freq,
           scale=c(5,0.1),min.freq=50,max.words=100,
@@ -135,6 +135,6 @@ pttTestFunction <- function(URL, filename)
 }
 ```
 
-- [¤å¥»²M²z](https://cran.r-project.org/doc/contrib/de_Jonge+van_der_Loo-Introduction_to_data_cleaning_with_R.pdf)
-- [¤å¦r¶³](https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf)
+- [æ–‡æœ¬æ¸…ç†](https://cran.r-project.org/doc/contrib/de_Jonge+van_der_Loo-Introduction_to_data_cleaning_with_R.pdf)
+- [æ–‡å­—é›²](https://cran.r-project.org/web/packages/wordcloud/wordcloud.pdf)
 - [Wordcloud2](https://cran.r-project.org/web/packages/wordcloud2/vignettes/wordcloud.html)
