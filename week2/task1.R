@@ -41,5 +41,27 @@ ggplot(data = airquality, aes(x = Temp, y = Ozone, color=Month, size=Wind)) +
 ## BONUS
 
 library(ggmap)
+library(mapproj)
+
+map <- get_map(location = 'Taiwan', zoom = 7, language = "zh-TW")
+ggmap(map)
+
+# toner-lite  type
+map <- get_map(location = c(lon = 120.233937, lat = 22.993013),
+               zoom = 10, language = "zh-TW", maptype = "toner-lite")
+ggmap(map)
+
+
+# read csv
+itaiwan <- read.csv("itaiwan-3.csv")
+
+itaiwan
+
+
+library(ggmap)
+map <- get_map(location = 'Kaohsiung', zoom = 13, language = "zh-TW")
+ggmap(map, darken = c(0.1, "white")) + geom_point(aes(x = longitude, y = latitude), data = itaiwan) 
++ ggtitle("高雄iTaiwan分布圖(局部)") + theme(plot.title = element_text(hjust = 0.5))
+
 
 

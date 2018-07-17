@@ -50,9 +50,19 @@ ggplot(data = airquality, aes(x = Temp, y = Ozone, color=Month, size=Wind)) +
 ```
 
 
-### __Bonus__
+### __Bonus__ 
 
+高雄iTaiwan分布(局部)
+```{r}
+library(ggmap)
+library(mapproj)
 
+itaiwan <- read.csv("itaiwan-3.csv")
+head(itaiwan)
+
+map <- get_map(location = 'Kaohsiung', zoom = 13, language = "zh-TW")
+ggmap(map, darken = c(0.1, "white")) + geom_point(aes(x = longitude, y = latitude), data = itaiwan) + ggtitle("高雄市iTaiwan分布圖(局部)") + theme(plot.title = element_text(hjust = 0.5))
+```
 
 
 
