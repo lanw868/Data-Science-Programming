@@ -1,0 +1,63 @@
+---
+title: "Data Visualization"
+output: html_document
+date: 2018/07/17
+---
+
+### __1. Dataset__
+```{r}
+library(ggplot2)
+head(airquality)
+airquality$Month <- factor(airquality$Month)
+summary(airquality)
+```
+
+### __2. 單變數：類別型__
+```{r}
+ggplot(data = airquality, aes(x = Month)) +
+  geom_bar(fill="lightblue", colour = "black")
+```
+
+
+### __3. 單變數：連續型__
+```{r}
+ggplot(data = airquality, aes(x = Temp)) +
+  geom_histogram() + facet_wrap(Month~.)
+```
+
+
+### __4. 雙變數：連續 vs 連續__
+```{r}
+ggplot(data = airquality, aes(x = Temp, y = Ozone)) +
+  geom_point()
+
+ggplot(data = airquality, aes(x = Wind, y = Ozone)) +
+  geom_point()
+```
+
+
+### __5. 雙變數：離散 vs 連續__
+```{r}
+ggplot(data = airquality, aes(x = Month, y = Temp)) +
+  geom_boxplot()
+```
+
+
+### __6. 多變量__
+```{r}
+ggplot(data = airquality, aes(x = Temp, y = Ozone, color=Month, size=Wind)) +
+  geom_point()
+```
+
+
+### __Bonus__
+
+
+
+
+
+
+
+
+
+

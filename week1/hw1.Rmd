@@ -4,23 +4,19 @@ title: "HW1"
 output: html_document
 date: 2018/07/15
 ---
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
-
-[__Introduction to R (R »y¨¥¾É½×)__](https://www.datacamp.com/courses/free-introduction-to-r)
+[__Introduction to R (R èªè¨€å°è«–)__](https://www.datacamp.com/courses/free-introduction-to-r)
 
 
 
-###  **1. ¦V¶q (vector)**
+###  **1. å‘é‡ (vector)**
 
-#### **«Å§i**
+#### **å®£å‘Š**
 ```{r}
 poker_vector <- c(140, -50, 20, -120, 240)
 ```
 
-#### **©R¦W**
+#### **å‘½å**
 ```{r}
 days_vector <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
 names(poker_vector) <- days_vector
@@ -31,11 +27,11 @@ poker_vector
 ```
 
 
-**ª`·N²Ä¤@­Ó¤¸¯Àªº¯Á¤Ş­È¬O 1¡A¤£¹³¨ä¥Lµ{¦¡»y¨¥²Ä¤@­Ó¤¸¯Àªº¯Á¤Ş­È¬O 0¡C**
+**æ³¨æ„ç¬¬ä¸€å€‹å…ƒç´ çš„ç´¢å¼•å€¼æ˜¯ 1ï¼Œä¸åƒå…¶ä»–ç¨‹å¼èªè¨€ç¬¬ä¸€å€‹å…ƒç´ çš„ç´¢å¼•å€¼æ˜¯ 0ã€‚**
 
-* ­n¿ï¾Ü²Ä¤@­Ó¤¸¯À´N¿é¤J poker_vector[1] ¡A­n¿ï¾Ü²Ä¤G­Ó¤¸¯À´N¿é¤J poker_vector[2] ...µ¥¡C
+* è¦é¸æ“‡ç¬¬ä¸€å€‹å…ƒç´ å°±è¼¸å…¥ poker_vector[1] ï¼Œè¦é¸æ“‡ç¬¬äºŒå€‹å…ƒç´ å°±è¼¸å…¥ poker_vector[2] ...ç­‰ã€‚
 
-* poker_vector[2:4]¡Cª`·N 2:4 ­nÂ\¦b¤¤¬A¸¹¸Ì­±¤~¯à¿ï¥X²Ä¤G¦Ü²Ä¥|­Ó¤¸¯À¡C
+* poker_vector[2:4]ã€‚æ³¨æ„ 2:4 è¦æ“ºåœ¨ä¸­æ‹¬è™Ÿè£¡é¢æ‰èƒ½é¸å‡ºç¬¬äºŒè‡³ç¬¬å››å€‹å…ƒç´ ã€‚
 ```{r}
 poker_midweek <- poker_vector[c(2,3,4)]
 ```
@@ -46,14 +42,14 @@ poker_midweek <- poker_vector[2:4]
 
 
 
-### **2.  ¯x°} (matrix)**
+### **2.  çŸ©é™£ (matrix)**
 
-#### **«Å§i**
+#### **å®£å‘Š**
 ```{r}
 matrix(1:9, byrow = TRUE, nrow = 3)
 ```
 
-#### **©R¦W**
+#### **å‘½å**
 ```{r, eval=FALSE}
 rownames(my_matrix) <- row_names_vector
 colnames(my_matrix) <- col_names_vector
@@ -66,11 +62,11 @@ star_wars_matrix <- matrix(box_office, nrow = 3, byrow = TRUE,
                            dimnames = list(c("A New Hope", "The Empire Strikes Back", "Return of the Jedi"), 
                                            c("US", "non-US")))
 
-# ­pºâ¥ş²y²¼©Ğ¦¬¤J
+# è¨ˆç®—å…¨çƒç¥¨æˆ¿æ”¶å…¥
 worldwide_vector <- rowSums(star_wars_matrix)
 ```
 
-#### **cbind  ¦A¦h¥[¤@Äæ**
+#### **cbind  å†å¤šåŠ ä¸€æ¬„**
 ```{r, eval=FALSE}
 big_matrix <- cbind(matrix1, matrix2, vector1...)
 ```
@@ -80,51 +76,51 @@ big_matrix <- cbind(matrix1, matrix2, vector1...)
 all_wars_matrix <- rbind(star_wars_matrix, star_wars_matrix2)
 ```
 
-#### **­¼ªk**
+#### **ä¹˜æ³•**
 
-¦p¦P `2 * my_matrix` ·|±N `my_matrix` ¤¤ªº¨C­Ó¤¸¯À³£­¼¥H 2¡A `my_matrix1 * my_matrix2` «h¬O±N¹ïÀ³¬Û¦P¦ì¸mªº¤¸¯À§@­¼ªk¹Bºâ¡C
+å¦‚åŒ `2 * my_matrix` æœƒå°‡ `my_matrix` ä¸­çš„æ¯å€‹å…ƒç´ éƒ½ä¹˜ä»¥ 2ï¼Œ `my_matrix1 * my_matrix2` å‰‡æ˜¯å°‡å°æ‡‰ç›¸åŒä½ç½®çš„å…ƒç´ ä½œä¹˜æ³•é‹ç®—ã€‚
 
-__¼Ğ·Ç¯x°}¹Bºâ¤l­n¨Ï¥Î `%*%` __
+__æ¨™æº–çŸ©é™£é‹ç®—å­è¦ä½¿ç”¨ `%*%` __
 
 
-### **3. ¦]¯À¦V¶q (factor)**
+### **3. å› ç´ å‘é‡ (factor)**
 ```{r}
 theory <- "factors for categorical variables"
 ```
 
-#### **µL§Çor¦³§Ç**
+#### **ç„¡åºoræœ‰åº**
 ```{r}
-# °Êª«
+# å‹•ç‰©
 animals_vector <- c("Elephant", "Giraffe", "Donkey", "Horse")
 factor_animals_vector <- factor(animals_vector)
 factor_animals_vector
 
-# ·Å«×
+# æº«åº¦
 temperature_vector <- c("High", "Low", "High","Low", "Medium")
 factor_temperature_vector <- factor(temperature_vector, order = TRUE, levels = c("Low", "Medium", "High"))
 factor_temperature_vector
 ```
 
-#### **­«·s«ü¬£¦WºÙ**
+#### **é‡æ–°æŒ‡æ´¾åç¨±**
 ```{r}
-# «Ø¥ß factor_survey_vector
+# å»ºç«‹ factor_survey_vector
 survey_vector <- c("M", "F", "F", "M", "M")
 factor_survey_vector <- factor(survey_vector)
 
-# «ü©w factor_survey_vector ªº¦WºÙ
+# æŒ‡å®š factor_survey_vector çš„åç¨±
 levels(factor_survey_vector) <- c("Female", "Male")
 
 factor_survey_vector
 ```
 
-#### **ºK­n**
+#### **æ‘˜è¦**
 ```{r}
 summary(survey_vector)
 
 summary(factor_survey_vector)
 ```
 
-### **4. ¸ê®Æ®Ø**
+### **4. è³‡æ–™æ¡†**
 
 * `head()`, `tail()`
 * `str()`
@@ -132,7 +128,7 @@ summary(factor_survey_vector)
 * `order()`
 
 
-#### **¿ï¾Ü¯S©wÄæ¦ì**
+#### **é¸æ“‡ç‰¹å®šæ¬„ä½**
 ```{r, eval=FALSE}
 planets_df[,3]
 planets_df[,"diameter"]
@@ -142,12 +138,12 @@ or
 planets_df$diameter
 ```
 
-#### **³]©w±ø¥ó**
+#### **è¨­å®šæ¢ä»¶**
 ```{r, eval=FALSE}
 subset(my_df, subset = some_condition)
 ```
 
-#### **±Æ§Ç**
+#### **æ’åº**
 ```{r}
 a <- c(100, 10, 1000)
 order(a)
@@ -157,7 +153,7 @@ a[order(a)]
 
 *Example*
 ```{r, include=FALSE}
-# «Å§i¦V¶q
+# å®£å‘Šå‘é‡
 name <- c("Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune")
 type <- c("Terrestrial planet", "Terrestrial planet", "Terrestrial planet", 
           "Terrestrial planet", "Gas giant", "Gas giant", "Gas giant", "Gas giant")
@@ -165,26 +161,26 @@ diameter <- c(0.382, 0.949, 1, 0.532, 11.209, 9.449, 4.007, 3.883)
 rotation <- c(58.64, -243.02, 1, 1.03, 0.41, 0.43, -0.72, 0.67)
 rings <- c(FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE)
 
-# ¥Ñ³o¨Ç¦V¶q«Ø¥ß¸ê®Æ®Ø
+# ç”±é€™äº›å‘é‡å»ºç«‹è³‡æ–™æ¡†
 planets_df <- data.frame(name, type, diameter, rotation, rings)
 ```
 
 
 ```{r}
-# ¨Ï¥Î order() «Ø¥ß positions
+# ä½¿ç”¨ order() å»ºç«‹ positions
 positions <-  order(planets_df$diameter)
 positions
 
-# ¨Ï¥Î positions ±Æ§Ç planets_df
+# ä½¿ç”¨ positions æ’åº planets_df
 planets_df[positions,]
 
 ```
 
-### **5.²M³æ (list)**
+### **5. æ¸…å–® (list)**
 * `list()`
 
 
-#### **©R¦W**
+#### **å‘½å**
 ```{r, eval=FALSE}
 my_list <- list(name1 = your_comp1, 
                 name2 = your_comp2)
