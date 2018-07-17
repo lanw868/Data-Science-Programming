@@ -10,8 +10,8 @@ NTU CS+X 全國夏季學院 資料科學程式設計
 - week 1
   - [hw1.html](http://lanw868.github.io/Data-Science-Programming/week1/hw1.html)
 - week 2
-  - [hw2_part1.html]()
-  - [hw2_part2.html]()
+  - [hw2_part1.html](http://lanw868.github.io/Data-Science-Programming/week2/task1.html)
+  - [hw2_part2.html](http://lanw868.github.io/Data-Science-Programming/week2/task2.html)
 
 
 ## Week 1
