@@ -12,7 +12,9 @@ NTU CS+X 全國夏季學院 資料科學程式設計
 - week 2
   - [hw2_part1.html](http://lanw868.github.io/Data-Science-Programming/week2/task1.html)
   - [hw2_part2.html](http://lanw868.github.io/Data-Science-Programming/week2/task2.html)
-
+- week 3
+  - [hw3_EDA](http://lanw868.github.io/Data-Science-Programming/week3/EDA.html)
+  - [hw3_TFIDF -> PCA -> K-means](http://lanw868.github.io/Data-Science-Programming/week3/TFIDF_PCA_KMEANS.html)
 
 ## Week 1
 - [投影片](https://goo.gl/uGUiJk)  
@@ -45,6 +47,12 @@ NTU CS+X 全國夏季學院 資料科學程式設計
 - [投影片](https://goo.gl/kmE3mE)
 - 進度:
   - In class
+    - EDA簡介
+    - Kaggle Script (Tinatic)
+    - TF-IDF, PCA, KMeans介紹與串聯使用
+  - At home
+    - hw3
+    - 複習下午課程影片
     
 
 
@@ -56,3 +64,4 @@ NTU CS+X 全國夏季學院 資料科學程式設計
 - [Intermediate R](https://www.datacamp.com/courses/intermediate-r)
 - [Introduction to the tidyverse](https://www.datacamp.com/courses/introduction-to-the-tidyverse)
 - [Tutorial on the R Apply Family](https://www.datacamp.com/community/tutorials/r-tutorial-apply-family)
+- [Correlation and Regression](https://www.datacamp.com/courses/correlation-and-regression)
