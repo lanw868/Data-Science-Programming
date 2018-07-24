@@ -1,0 +1,343 @@
+---
+title: "Report of Zomato EDA in R"
+output: html_document
+date: 2018/07/18
+---
+
+Dataset from [HERE](https://www.kaggle.com/shrutimehta/zomato-restaurants-data)  
+(註：Zomato 是一個美食搜尋網站)
+
+### __1. Import Library__
+```{r, message=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(ggridges)
+library(plotly)
+library(tidytext)
+```
+
+### __2. 讀入資料__
+```{r}
+
+zomato <- read.csv('./data/zomato-restaurants-data/zomato.csv')
+country_code <- read.csv('./data/zomato-restaurants-data/Country-Code.csv')
+
+# 合併兩資料
+df <- merge(zomato, country_code, by.x="Country.Code", by.y="Country.Code")
+
+# 刪去多餘欄位
+drops <- c("Country.Code")
+df <- df[ , !(names(df) %in% drops)]
+
+head(df)
+df %>% summary()
+```
+
+### __3. 加入地圖資訊__
+- `filter()`:　篩選符合條件的觀測值
+- `fortify()`: 將shapefile物件轉為data.frame
+- `select()`:	選擇變數
+- `mutate()`:	新增變數
+- `%>%`: the “pipe” operator 連結上數函式，將所有函式計算串在一起執行
+
+```{r, message=FALSE, , warning=FALSE}
+WorldMap <- map_data('world')
+
+# 只取Antarctica以外的區域
+WorldMap %>% filter(region != "Antarctica") -> WorldMap
+WorldMap <- fortify(WorldMap)
+
+# 取出zomato資料的經緯度及價格區間
+zomato_world <- df %>% select(Latitude,Longitude,Price.range) %>% mutate(Price.range=as.factor(Price.range))
+
+# 畫出背景地圖
+p <- ggplot() + 
+  geom_map(data=WorldMap, map=WorldMap, aes(x=long, y=lat, group=group, map_id=region),
+           fill="white", colour="#7f7f7f", size=0.5)
+# 加上資料點
+p <- p + geom_point(data=zomato_world,aes(x=Longitude,y=Latitude,color=Price.range))
+
+p <- p + 
+  theme(panel.background = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        legend.position = 'bottom',
+        legend.background = element_blank(),
+        plot.title = element_text(hjust=0.5,face='bold',color='#2d2d2d'),
+        legend.key = element_rect(fill='white',color = 'transparent')) + 
+  labs(title='Positions of Profiled Restaurants', color='Price Range')
+
+p
+```
+
+__=> 觀察圖片可以發現，大多數的餐廳位於印度和美國__
+
+```{r}
+df %>% 
+  select(Restaurant.ID,Country) %>%
+  unique() %>%
+  group_by(Country) %>%
+  summarise(n=n()) %>%
+  ggplot(aes(x=reorder(Country,n),y=n)) + 
+  geom_bar(stat='identity',fill='lightblue') + coord_flip() + 
+  theme(panel.background = element_blank(),
+        strip.background = element_blank(),
+        axis.title = element_text(color = '#2d2d2d'),
+        strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
+        plot.title = element_text(hjust=0.5,face='bold',size=15)) +
+  labs(x='Country',y='Number of Restaurants',title="Number of Restaurants by Country")
+```
+
+__=> 由柱狀圖更可清楚觀察各國家餐廳數量上的差距__
+
+### __4. 針對印度的餐廳進行探索__
+
+```{r, message=FALSE, , warning=FALSE, echo=FALSE}
+WorldMap <- map_data('world')
+
+# 只取Antarctica以外的區域
+WorldMap %>% filter(region == "India") -> WorldMap
+WorldMap <- fortify(WorldMap)
+
+# 取出zomato資料的經緯度及價格區間
+zomato_world <- df %>% filter(Country=='India') %>% filter(Longitude>60) %>% select(Latitude,Longitude,Price.range) %>% mutate(Price.range=as.factor(Price.range))
+
+# 畫出背景地圖
+p <- ggplot() + geom_map(data=WorldMap,
+                         map=WorldMap,
+                         aes(x=long, y=lat, group=group, map_id=region),
+                         fill="white", colour="#7f7f7f", size=0.5)
+# 加上資料點
+p <- p + geom_point(data=zomato_world,aes(x=Longitude,y=Latitude,color=Price.range))
+
+p <- p + 
+  theme(panel.background = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        legend.position = 'bottom',
+        legend.background = element_blank(),
+        plot.title = element_text(hjust=0.5,face='bold',color='#2d2d2d'),
+        legend.key = element_rect(fill='white',color = 'transparent')) + labs(title='Positions of Restaurants in India', color='Price Range')
+
+p
+```
+
+#### __4.1 How many restaurants have been profiled in India?__
+```{r}
+df %>% filter(Country=='India') %>% 
+  select(Restaurant.ID) %>%
+  unique() %>%
+  nrow()
+```
+__=>此資料集中一共有8652筆位於印度的餐廳資料__
+
+#### __4.2 In which cities are these restaurants present in ?__
+
+- `summarise()`: 計算統計值
+- 因為 ggplot2 的 `geom_bar()` 預設會協助我們計算類別變數中的相異個數：`stat = "count"`，也就是 table() 函數做的事情，假如長條的高度已經在資料框中被計算好，那麼就用 `stat = "identity"` 就可以了
+- `coord_flip()`: x,y 翻轉
+
+```{r}
+df %>% 
+  filter(Country=='India') %>%
+  select(Restaurant.ID,City) %>%
+  unique() %>%
+  group_by(City) %>%
+  summarise(n=n()) %>%
+  ggplot(aes(x=reorder(City,n),y=n)) + geom_bar(stat='identity',fill='lightblue') + 
+  coord_flip() + 
+  labs(x='City',y='Number of Restaurants',title="Number of Restaurants in India by City") + 
+  theme(panel.background = element_blank(),
+        strip.background = element_blank(),
+        axis.title = element_text(color = '#2d2d2d'),
+        strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
+        plot.title = element_text(hjust=0.5,face='bold',size=15)) 
+```
+
+__=> 多數餐廳都位於首都New Delhi，Guragon, Noida, Faridabad 此三城市都分布在印度北部，距首都不遠處__
+
+#### __4.3 How do the prices vary for each type of price range?__
+
+```{r}
+df %>% 
+  filter(Country=="India") %>%
+  ggplot(aes(y = as.factor(Price.range))) +
+  geom_density_ridges(aes(x = Average.Cost.for.two),
+                      alpha = .5, color = "white", from = 0, to = 8000,fill='#cb202d') +
+  labs(x = "Average Cost for Two",
+       y = "Price Raneg",
+       title = "Price Ranges",
+       subtitle = "",
+       caption = "") +
+  theme(plot.title = element_text(hjust=0.5,face='bold',color='#2d2d2d'),
+        panel.background = element_blank(),
+        strip.text = element_text(face='bold',color='#2d2d2d'),
+        axis.text.x = element_text(face='bold',color='#2d2d2d'),
+        axis.text = element_text(face='bold',color='#2d2d2d'))
+```
+
+__=> Price Range = 1 的全距最小，Price Range = 4 的全距最大__
+
+#### __4.4 For each price range what were the top rated places?__
+
+```{r}
+#Sys.setlocale('LC_ALL','C')
+Sys.setlocale(category='LC_ALL', locale='English_United States.1252')
+
+for(i in 1:4){
+  
+  assign(paste("test"),zomato %>% filter(Country.Code==1,Price.range==i) %>%
+           group_by(Restaurant.Name,Price.range) %>% 
+           summarise(avg_rating=mean(Aggregate.rating)) %>% ungroup() %>%
+           unique() %>%
+           arrange(desc(avg_rating)) %>%
+           head(10))
+  #print(test)
+  if(i==1){
+    zomato_ranking_for_price_range <- test
+  }
+  else{
+    zomato_ranking_for_price_range <- bind_rows(zomato_ranking_for_price_range,test)
+  }
+  #print(dim(test))
+  
+}
+
+d <- zomato_ranking_for_price_range %>% 
+  ungroup() %>%
+  arrange(Price.range,avg_rating) %>%
+  mutate(.r=row_number()) %>%
+  mutate(Restaurant.Name=gsub('\"'," ",(Restaurant.Name),fixed=TRUE))
+#print(d)
+
+d$Restaurant.Name <- as.character(d$Restaurant.Name)
+
+p <- ggplot(d,aes(.r, avg_rating)) + 
+  geom_bar(stat='identity', fill='#cb202d') +
+  geom_text(stat='identity', aes(label=avg_rating), hjust=1, color=I("black"), size=3) + 
+  facet_wrap(~Price.range, scales='free')+  
+  scale_x_continuous(breaks=d$.r, labels=d$Restaurant.Name)+
+  coord_flip() +
+  theme(plot.title = element_text(hjust=0.5, face='bold', color='#2d2d2d'),
+        panel.background = element_blank(),
+        strip.text = element_text(face='bold', color='#2d2d2d'),
+        axis.text.x = element_text(face='bold', color='#2d2d2d'),
+        axis.text = element_text(face='bold', color='#2d2d2d')) +
+  labs(y='Average Rating',x='Restaurant', title='Top Rated Restaurants by Price Ranges')
+
+p
+```
+
+__=> Price Range = 3, 4 的評分普遍較高__
+
+#### __4.5 How many restaurants have Online Delivery in India?__
+
+```{r}
+df %>%  
+  filter(Country=="India") %>%
+  select(Restaurant.ID,Has.Online.delivery,City) %>%
+  unique() %>%
+  group_by(City,Has.Online.delivery) %>%
+  summarise(n=n()) %>%
+  ungroup() %>%
+  rename(`Online Delivery Service`=Has.Online.delivery) %>%
+  ggplot(aes(x=reorder(City,n),y=n,fill=`Online Delivery Service`)) +
+  geom_bar(stat='identity',position='dodge',width = 0.5) +
+  labs(x='City',y='Number of Restaurants') + 
+  coord_flip() + 
+  theme(plot.title = element_text(hjust=0.5,face='bold',color='#2d2d2d'),
+        panel.background = element_blank(),
+        strip.text = element_text(face='bold',color='#2d2d2d'),
+        axis.text.x = element_text(face='bold',color='#2d2d2d'),
+        axis.text = element_text(face='bold',color='#2d2d2d'))
+```
+
+__=> 大多數的餐廳都沒有提供Online Delivery Service, 只有前幾大城市的部分餐廳有提供__
+
+#### __4.6 What are the most popular cuisines in India?__
+
+- `unnest_tokens()`: from `tidytext` package
+```{r}
+#改善原本只使用2-grams的格式
+my_token = function(t) str_split(t,", ")
+
+df %>%  
+  filter(Country=="India") %>%
+  select(Restaurant.ID,Cuisines,Average.Cost.for.two) %>%
+  unique() %>%
+  mutate(Cuisines=as.character(Cuisines)) %>%
+  unnest_tokens(style, Cuisines, token=my_token) %>%
+  group_by(style) %>%
+  summarise(n=n()) %>%
+  arrange(desc(n)) %>%
+  top_n(10) %>%
+  ggplot(aes(x=reorder(style,n),y=n)) + 
+  geom_bar(stat='identity',fill='#cb202d') +
+  coord_flip() +
+  theme(plot.title = element_text(hjust=0.5,face='bold',color='#2d2d2d'),
+        panel.background = element_blank(),
+        strip.text = element_text(face='bold',color='#2d2d2d'),
+        axis.text.x = element_text(face='bold',color='#2d2d2d'),
+        axis.text = element_text(face='bold',color='#2d2d2d')) +
+  labs(x='Cuisine',y='Number of Mentions',title='Popular Cuisines by Mentions')
+
+```
+
+__=> 多數餐廳分布在北印度，north indian擁有最多筆資料很合理，特別的是Chinese food 也佔有一席之地呢！__
+
+#### __4.7 Is there a relationship between Price range,Votes and Average Cost for two?__
+```{r}
+df %>%  
+  filter(Country=="India") %>%
+  mutate(Price.range=as.factor(Price.range)) %>%
+  ggplot(aes(x=Votes,y=Average.Cost.for.two,color=Price.range)) +
+  geom_point(alpha=0.4) +
+  labs(x='Votes',y='Average Cost for Two', 
+       title='Relationship between Price and Votes') +
+  facet_wrap(~Price.range)+
+  geom_smooth(method='lm')+
+  theme(plot.title = element_text(hjust=0.5,face='bold',color='#2d2d2d'),
+        panel.background = element_blank(),
+        strip.text = element_text(face='bold',color='#2d2d2d'),
+        axis.text.x = element_text(face='bold',color='#2d2d2d'),
+        axis.text = element_text(face='bold',color='#2d2d2d'))
+
+```
+
+__=> 很意外地發現只有Price Range = 4 的 votes和cost線斜率為負的，可能是因為此區間的價位較高，能獲得高票數的店也相對有較多的客人(價格較低)，相反地價格越貴的店客人數也可能比較少__
+
+
+#### __4.8 Average Votes for restaurants that do/ do not have table booking, that do/do not have online delivery option and that do/ do not have switch to order menu__
+
+```{r}
+df %>%  
+  filter(Country=="India") %>%
+  select(Votes, Switch.to.order.menu, Has.Table.booking, Has.Online.delivery) %>%
+  tidyr::gather(type, value, 2:4) %>%
+  mutate(type=gsub("[.]"," ",type)) %>%
+  group_by(type, value) %>%
+  summarise(mean_votes = mean(Votes,na.rm=TRUE)) %>%
+  ggplot(aes(x=value,y=mean_votes)) + 
+  geom_bar(stat='identity',fill='#cb202d') + 
+  facet_wrap(~type) +
+  labs(x='Answer', y='Average Number of Votes',
+       title='Average Votes for different kinds of restaurants') +
+  theme(plot.title = element_text(hjust=0.5,face='bold',color='#2d2d2d'),
+        panel.background = element_blank(),
+        strip.text = element_text(face='bold',color='#2d2d2d'),
+        axis.text.x = element_text(face='bold',color='#2d2d2d'),
+        axis.text = element_text(face='bold',color='#2d2d2d'))
+```
+
+__=> 有Online deliver 和 Table booking的餐廳都有較高的平均票數__
+
+__=> Order menu 在此資料集中沒有意義，因為沒有任何一家餐廳有提供此功能__
+
+### __5. 總結__
+
+- 餐廳主要分布在印度
+- 尤其又以印度的首都New Delhi最多
+- 大多數印度的餐廳都沒有提供Online Delivery Service
+- 印度最受歡迎的三種食物類型為：north indian, chinese, fast food
+- Price 和 vote 間沒有明顯的關係
+- Switch.to.order.menu 在此資料集中是無效欄位

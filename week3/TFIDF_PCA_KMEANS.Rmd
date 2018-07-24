@@ -1,0 +1,264 @@
+---
+title: "TFIDF_PCA_KMeans"
+output: html_document
+date: 2018/07/24
+---
+##唐詩作者分析
+資料取自五位唐代詩人(白居易,杜甫,李白,孟浩然,王維)的 五言/七言 絕句/律詩 
+
+### Import Library
+```{r, message=FALSE, warning=FALSE}
+library(tm)
+library(tmcn)
+library(Matrix)
+library(wordcloud)
+library(bitops)
+library(httr)
+library(RCurl)
+library(XML)
+library(NLP)
+library(jiebaRD)
+library(jiebaR)
+library(devtools)
+install_github("ggbiplot", "vqv")
+library(scales)
+library(grid)
+library(ggbiplot)
+library(factoextra)
+```
+
+### 資料爬取
+- 已先行使用python修改網路上的範例code進行爬取，詳見scrapy_poem.py  
+- 另將檔案由簡體轉為繁體  
+- 檔案存於 ./data/poem
+
+
+## TFIDF
+
+1. 建立文本資料結構與基本文字清洗
+```{r}
+d.corpus <- Corpus( DirSource("./data/poem", encoding = "UTF-8"))
+d.corpus <- tm_map(d.corpus, removePunctuation) #移除標點符號
+d.corpus <- tm_map(d.corpus, removeNumbers) #移除數字
+#d.corpus <- tm_map(d.corpus,stripWhitespace) #消除空格
+#d.corpus <- tm_map(d.corpus, function(word) { # 移除大小寫
+#  gsub("[A-Za-z0-9]", "", word)
+#})
+```
+
+2. 進行斷詞
+```{r}
+mixseg = worker()
+#斷詞
+jieba_tokenizer = function(d)
+{
+  unlist( segment(d[[1]], mixseg) )
+}
+seg = lapply(d.corpus, jieba_tokenizer)
+
+#計數
+count_token = function(d)
+{
+  as.data.frame(table(d))
+}
+tokens = lapply(seg, count_token)
+```
+
+3. 依照作者建立文本矩陣 TermDocumentMatrix(TDM)
+```{r}
+# TDM
+n = length(seg)
+TDM = tokens[[1]]
+colNames <- c('白居易','杜甫','李白','孟浩然','王維')
+for( id in c(2:n) )
+{
+  TDM = merge(TDM, tokens[[id]], by="d", all = TRUE)
+  names(TDM) = c('d', colNames[1:id])
+}
+
+TDM[is.na(TDM)] <- 0 #將NA填0
+
+library(knitr)
+kable(head(TDM))
+
+kable(tail(TDM))
+```
+
+4. 將TDM 轉成 TF-IDF
+
+```{r}
+tf <- apply(as.matrix(TDM[,2:(n+1)]), 2, sum) #直向相加計算總數
+
+idfCal <- function(word_doc)
+{ 
+  log2( n / nnzero(word_doc) ) 
+}
+idf <- apply(as.matrix(TDM[,2:(n+1)]), 1, idfCal)
+
+doc.tfidf <- TDM
+
+tempY = matrix(rep(c(as.matrix(tf)), each = length(idf)), nrow = length(idf))
+tempX = matrix(rep(c(as.matrix(idf)), each = length(tf)), ncol = length(tf), byrow = TRUE)
+doc.tfidf[,2:(n+1)] <- (doc.tfidf[,2:(n+1)] / tempY) * tempX
+
+#刪除不重要(td-idf=0)的字
+stopLine = rowSums(doc.tfidf[,2:(n+1)])
+delID = which(stopLine == 0)
+
+kable(head(doc.tfidf[delID,1]))
+
+kable(tail(doc.tfidf[delID,1]))
+
+# final result
+TDM = TDM[-delID,]
+doc.tfidf = doc.tfidf[-delID,]
+```
+
+5. TF-IDF 各作者文章取得的重要關鍵字
+```{r}
+TopWords = data.frame()
+for( id in c(1:n) )
+{
+  dayMax = order(doc.tfidf[,id+1], decreasing = TRUE)
+  showResult = t(as.data.frame(doc.tfidf[dayMax[1:10],1])) #取前10
+  TopWords = rbind(TopWords, showResult)
+}
+rownames(TopWords) = colnames(doc.tfidf)[2:(n+1)]
+TopWords = droplevels(TopWords)
+kable(TopWords)
+```
+
+6. Query of Words
+可隨意查詢字組在每個作者文章的TF-IDF, 這邊以"美酒", "夕陽", "故人", "老翁", "西風", "琵琶"五組字為範例
+```{r}
+query.tfidf <- function(q){
+  q.tfidf <- doc.tfidf[doc.tfidf$d==q, ]
+  return (q.tfidf)
+}
+
+query=c("美酒", "夕陽", "故人", "老翁", "西風", "琵琶")
+result = query.tfidf(query[1])
+for ( id in c(2:length(query)) )
+{
+  q.tfidf = query.tfidf(query[id])  
+  result = rbind(result, q.tfidf)
+}
+result
+```
+
+7. Cosine Similiarity
+比較各作者間的相關性，這邊將李白設為1做為比較對象
+```{r}
+cos <- function(x, y){
+  return (x %*% y / sqrt(x %*% x * y %*% y))[1, 1]
+}
+# compare with 李白
+docs.cos.sim <- apply(doc.tfidf[,2:6], 2, cos, y = doc.tfidf[,4])
+docs.cos.sim
+```
+似乎沒有誰比較有相關的感覺
+
+
+8. 文字雲
+```{r, warning=FALSE}
+library(wordcloud)
+rownames(doc.tfidf) = doc.tfidf$d
+f <- sort(rowSums(doc.tfidf[,2:6]), decreasing = T)
+docs.df <- data.frame(
+  word = names(f),
+  freq = f
+)
+wordcloud(docs.df$word, docs.df$freq, scale=c(5,0.1),max.words=100,
+          random.order=TRUE, random.color=FALSE, 
+          rot.per=.1, colors=brewer.pal(8, "Dark2"),
+          ordered.colors=FALSE,use.r.layout=FALSE,
+          fixed.asp=TRUE)
+```
+
+可以看到各組字詞出現次數太過相近，很有可能是資料收集不足，且唐詩切詞比起我們現代的語言更有難度
+
+## PCA
+1. 降維
+```{r}
+t = t(doc.tfidf) #轉置
+t = t[-1,] #刪除第一列
+t = apply(t, 2, as.numeric) #由'character'轉成'numeric'
+
+#PCA
+pcat = prcomp(t)
+g <- ggbiplot(pcat, obs.scale = 1, var.scale = 1, ellipse = TRUE, circle = TRUE)
+# g
+
+```
+2. 作圖
+```{r}
+fviz_eig(pcat)
+```
+
+__陡坡圖(Scree plot)-凱莎原則__  
+將特徵值對主成份個數做圖，尋找出肘點(指由坡度變為較平緩的轉折點)，即為應保留的主成份個數。
+
+```{r}
+#文章
+fviz_pca_ind(pcat, geom= c("point","text","arrow"), col.ind = "cos2")
+```
+
+成功將原本一萬多維的資料表示在二維平面上！
+
+```{r}
+#特徵
+fviz_pca_var(pcat, col.var = "contrib")
+```
+
+可以發現散的越開的字，就是在文字雲中比較大的字
+
+## KMeans
+1. Choosing K
+```{r}
+docs.ind <- get_pca_ind(pcat)
+ind.coord2 <- docs.ind$coord[, 1:2]
+wss <- c()
+for (i in 1:4) { wss[i] <- kmeans(ind.coord2, i)$tot.withinss }
+plot(wss, type = "b")
+```
+
+沒有明顯彎曲，k=3時略有小曲折
+
+2. 分群(取 k = 2)
+```{r}
+kmeansData = pcat$x[,1:2]
+rownames(kmeansData) <- c('白居易','杜甫','李白','孟浩然','王維')
+
+cl <- kmeans(kmeansData, 2)
+plot(kmeansData, col = cl$cluster)
+text(kmeansData, labels = rownames(kmeansData), col = cl$cluster)
+points(cl$centers, col = 1:2, pch = 8, cex = 1) # pch 點樣式, cex 點大小
+```
+
+3. 分群(取 k = 3)
+```{r}
+cl <- kmeans(kmeansData, 3)
+plot(kmeansData, col = cl$cluster)
+text(kmeansData, labels = rownames(kmeansData), col = cl$cluster)
+points(cl$centers, col = 1:3, pch = 8, cex = 1) # pch 點樣式, cex 點大小
+```
+
+4. 分群(取 k = 4)
+```{r}
+cl <- kmeans(kmeansData, 4)
+plot(kmeansData, col = cl$cluster)
+text(kmeansData, labels = rownames(kmeansData), col = cl$cluster)
+points(cl$centers, col = 1:4, pch = 8, cex = 1) # pch 點樣式, cex 點大小
+```
+
+3. 結論與心得
+- 由於KMeans每次都隨機選取起始的中心點，導致每一次分群的結果都會不太一樣
+- 原先預想得到的結果是可以將詩人的派別區分出來，像是；社會派的杜甫、白居易，田園派的王維、孟浩然和浪漫派的李白，不過結果並分如此，反倒是李白和杜甫非常地靠近，也算是見證了他們的友誼啦！
+- 因為在資料收集和處理上花了一些功夫，若能將各作者詩數量增加，並加入更多不同時期的詩人，也許會有更驚人的結果
+
+
+
+
+
+
+
