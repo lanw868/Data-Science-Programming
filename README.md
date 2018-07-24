@@ -42,7 +42,10 @@ NTU CS+X 全國夏季學院 資料科學程式設計
 
 
 ## Week 3
-- [投影片](https://goo.gl/)
+- [投影片](https://goo.gl/kmE3mE)
+- 進度:
+  - In class
+    
 
 
 
@@ -52,3 +55,4 @@ NTU CS+X 全國夏季學院 資料科學程式設計
 - [R 語言導論 （中文版）](https://www.datacamp.com/community/open-courses/r-%E8%AA%9E%E8%A8%80%E5%B0%8E%E8%AB%96)
 - [Intermediate R](https://www.datacamp.com/courses/intermediate-r)
 - [Introduction to the tidyverse](https://www.datacamp.com/courses/introduction-to-the-tidyverse)
+- [Tutorial on the R Apply Family](https://www.datacamp.com/community/tutorials/r-tutorial-apply-family)
