@@ -15,6 +15,8 @@ NTU CS+X 全國夏季學院 資料科學程式設計
 - week 3
   - [hw3_EDA](http://lanw868.github.io/Data-Science-Programming/week3/EDA.html)
   - [hw3_TFIDF -> PCA -> K-means](http://lanw868.github.io/Data-Science-Programming/week3/TFIDF_PCA_KMEANS.html)
+- week 4
+  - [hw4_EDA + Regression](http://lanw868.github.io/Data-Science-Programming/week4/Regression_bike-sharing.html)
 
 ## Week 1
 - [投影片](https://goo.gl/uGUiJk)  
@@ -56,7 +58,12 @@ NTU CS+X 全國夏季學院 資料科學程式設計
     
 ## Week 4
 - [投影片](https://goo.gl/4i9NcX)
-
+- 進度:
+  - In class
+    - 統計工具(T-Test, ANOVA, p-value)
+    - Regression
+  - At home
+    - hw4
 
 
 
