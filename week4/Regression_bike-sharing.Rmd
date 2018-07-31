@@ -186,7 +186,7 @@ t.test(cnt ~ workingday, data = df, var.equal = TRUE)
 ---
 
 ### 以下觀察 月份 是否與 單車租借量 有關
-```{r cache=TRUE, warning=FALSE}
+```{r cache=TRUE, warning=FALSE, message=FALSE}
 
 #看不同 月份 下的 單車租借量 平均數
 tapply(df$cnt, df$mnth, mean)
