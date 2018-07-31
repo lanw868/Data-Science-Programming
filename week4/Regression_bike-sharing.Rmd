@@ -1,0 +1,581 @@
+---
+title: "Regression_bike-sharing"
+output: html_document
+date: 2018/07/25
+---
+![](https://d21xlh2maitm24.cloudfront.net/wdc/CaBi-logo_red.svg?mtime=20161005153847)
+
+#### 假設檢定
+
+1. T-Test  
+
+  - 所有的假設(null hypothesis)都是建立在"等於"上(平等)
+  - p<0.05 p夠小表示反駁的證據足夠(95%)，推翻等於假設 => 顯著(有相異性)
+  - p>0.05 p太大表示證據不足(<95%)，無法推翻等於假設 => 不顯著(無相異性)
+
+2. ANOVA（Analysis of variance）變異數分析
+  - 適用於多變數,不必做多次T-Test
+  - 探討 _連續型_ 變數與 _類別型_ 變數的關係
+  
+### __1. Import Library__
+```{r, message=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+```
+
+### __2. 讀入資料__
+此資料集收集了2011~2012年Washington D.C.的Capital Bikeshare 共享單車每天使用量紀錄，並輔以天氣和季節性等數據
+
+欄位簡介
+
+- `instant`: record index  
+- `dteday` : date  
+- `season` : season (1:springer, 2:summer, 3:fall, 4:winter)  
+- `yr` : year (0: 2011, 1:2012)  
+- `mnth` : month ( 1 to 12)  
+- `holiday` : weather day is holiday or not  
+- `weekday` : day of the week  
+- `workingday` : if day is neither weekend nor holiday is 1, otherwise is 0.  
+- `weathersit` :
+    - 1: Clear, Few clouds, Partly cloudy, Partly cloudy  
+    - 2: Mist + Cloudy, Mist + Broken clouds, Mist + Few clouds, Mist  
+    - 3: Light Snow, Light Rain + Thunderstorm + Scattered clouds, Light Rain + Scattered clouds  
+    - 4: Heavy Rain + Ice Pallets + Thunderstorm + Mist, Snow + Fog  
+- `temp` : Normalized temperature in Celsius. The values are divided to 41 (max)  
+- `atemp`: Normalized feeling temperature in Celsius. The values are divided to 50 (max)  
+- `hum`: Normalized humidity. The values are divided to 100 (max)  
+- `windspeed`: Normalized wind speed. The values are divided to 67 (max)  
+- `casual`: count of casual users  
+- `registered`: count of registered users  
+- `cnt`: count of total rental bikes including both casual and registered  
+```{r}
+df <- read.csv('./data/Bike-Sharing-Dataset/day.csv')
+
+df$season <- factor(df$season)
+df$yr <- factor(df$yr)
+df$mnth <- factor(df$mnth)
+df$holiday <- factor(df$holiday)
+df$weekday <- factor(df$weekday)
+df$workingday <- factor(df$workingday)
+df$weathersit <- factor(df$weathersit)
+
+df %>% summary()
+```
+
+---
+
+## Part A. 年 vs 單車租借量 
+
+---
+
+### 首先從不同年份的單車租借量盒鬚圖開始，並計算其信賴區間
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = df, aes(x = yr, y = cnt)) +
+ geom_boxplot() + coord_flip() +
+ labs( y = 'count', x = 'year', 
+       title = '單車租借量 Box') +
+  theme(axis.title = element_text(color = '#2d2d2d'),
+        strip.text.x =  element_text(color='#2d2d2d',face='bold',size=10),
+        plot.title = element_text(hjust=0.5,face='bold',size=15)) 
+```
+
+> => __推測2012的數量比2011高出許多__
+
+```{r cache=TRUE, warning=FALSE}
+#以下函式計算95%信賴區間
+with(df, 
+     tapply(cnt, yr,
+     function(x) 
+       c(mean(x) + c(-2, 2) * sd(x)/sqrt(length(x)))))
+```
+
+### 以下用 t-test 檢驗不同年分是否存在單車租借量差異
+```{r cache=TRUE, warning=FALSE}
+#此函數會預設進行 Welch 校正，以處理兩樣本變異數不相同的問題
+t.test(cnt ~ yr, data = df)
+
+#可加上參數 var.equal=TRUE 來假設變異數同值(不做Welch校正)
+t.test(cnt ~ yr, data = df, var.equal = TRUE)
+```
+> => __p-value極小，表示年份是顯著的__  
+可能隨著環保意識抬頭，使用共享單車的人數也越來越多
+
+
+---
+
+## Part B. 節日(holiday) vs 單車租借量 
+
+---
+
+### 首先從不同holiday的單車租借量盒鬚圖開始，並計算其信賴區間
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = df, aes(x = holiday, y = cnt)) +
+ geom_boxplot() + coord_flip() +
+ labs( y = 'count', x = 'holiday', 
+       title = '單車租借量 Box') +
+  theme(axis.title = element_text(color = '#2d2d2d'),
+        strip.text.x =  element_text(color='#2d2d2d',face='bold',size=10),
+        plot.title = element_text(hjust=0.5,face='bold',size=15)) 
+```
+
+> => __推測假日使用單車的人較少__
+
+```{r cache=TRUE, warning=FALSE}
+#以下函式計算95%信賴區間
+with(df, 
+     tapply(cnt, holiday,
+     function(x) 
+       c(mean(x) + c(-2, 2) * sd(x)/sqrt(length(x)))))
+```
+
+### 以下用 t-test 檢驗節日與否是否存在單車租借量差異
+```{r cache=TRUE, warning=FALSE}
+#此函數會預設進行 Welch 校正，以處理兩樣本變異數不相同的問題
+t.test(cnt ~ holiday, data = df)
+
+#可加上參數 var.equal=TRUE 來假設變異數同值(不做Welch校正)
+t.test(cnt ~ holiday, data = df, var.equal = TRUE)
+```
+> => __p-value不夠小，表示節日是不顯著的__
+
+
+
+---
+
+## Part C. 工作日(workingday) vs 單車租借量 
+
+---
+
+### 首先從不同workingday的單車租借量盒鬚圖開始，並計算其信賴區間
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = df, aes(x = workingday, y = cnt)) +
+ geom_boxplot() + coord_flip() +
+ labs( y = 'count', x = 'workingday', 
+       title = '單車租借量 Box') +
+  theme(axis.title = element_text(color = '#2d2d2d'),
+        strip.text.x =  element_text(color='#2d2d2d',face='bold',size=10),
+        plot.title = element_text(hjust=0.5,face='bold',size=15)) 
+```
+
+
+```{r cache=TRUE, warning=FALSE}
+#以下函式計算95%信賴區間
+with(df, 
+     tapply(cnt, workingday,
+     function(x) 
+       c(mean(x) + c(-2, 2) * sd(x)/sqrt(length(x)))))
+```
+
+### 以下用 t-test 檢驗節日與否是否存在單車租借量差異
+```{r cache=TRUE, warning=FALSE}
+#此函數會預設進行 Welch 校正，以處理兩樣本變異數不相同的問題
+t.test(cnt ~ workingday, data = df)
+
+#可加上參數 var.equal=TRUE 來假設變異數同值(不做Welch校正)
+t.test(cnt ~ workingday, data = df, var.equal = TRUE)
+```
+> => __p-value不夠小，表示workingday是不顯著的__
+
+
+
+---
+
+## Part D. 年 & 月 vs 單車租借量
+
+---
+
+### 以下觀察 月份 是否與 單車租借量 有關
+```{r cache=TRUE, warning=FALSE}
+
+#看不同 月份 下的 單車租借量 平均數
+tapply(df$cnt, df$mnth, mean)
+
+library(Hmisc)
+
+#同 月份 下的 單車租借量 平均數，加上信賴區間
+ggplot(data = df, 
+       aes(x = mnth, y = cnt)) +
+  stat_summary(fun.data = 'mean_cl_boot', size = 1) +
+  scale_y_continuous(breaks = seq(2000, 6000, by = 1000)) +
+  geom_hline(yintercept = mean(df$cnt) , 
+             linetype = 'dotted') +
+  labs(x = '月份', y = '單車租借量平均') +
+  coord_flip()
+```
+
+### 在這裡我們推測 月份 的效果 可能是 年份 造成的，畫圖觀察看看
+```{r cache=TRUE, warning=FALSE}
+anova(m1 <- lm(cnt ~ mnth, data = df))
+```
+(註: mnth表組間, Residuals表組內, Mean Sq = Sum Sq / Df, F value = Mean Sq.mnth/Mean Sq.Residuals)  
+> =>__p-value極小，月份效果顯著__
+
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = df, 
+       aes(group = mnth, 
+          y = cnt, x = yr)) +
+  geom_point() +
+  stat_smooth(method = 'lm', se = F) +
+  stat_smooth(aes(group = mnth, 
+          y = cnt, x = yr), 
+          method = 'lm', se = F) + 
+  facet_grid( . ~  mnth) +
+  labs(x = 'year', y = '單車租借量')
+```
+
+
+### 利用以下 ANOVA 檢驗假設是否正確
+```{r cache=TRUE, warning=FALSE}
+#把 年份 加進模型
+anova(m2 <- update(m1, . ~ . + yr, data = df))
+#或許不是 月份 而是 年份 造成
+anova(m3 <- update(m2, . ~ . - mnth,  data = df))
+```
+> =>__p-value極小，兩者效果都顯著__
+
+### 將 ANOVA 結果做成圖表輸出，先計算一些需要的數據
+```{r cache=TRUE, warning=FALSE}
+#將結果放在一個list中
+res_lm <- lapply(list(m1, m2, m3), summary)
+#比較在控制 年份 下， 父母教育 的效果
+(res_lm[[2]]$r.sq - res_lm[[3]]$r.sq)/res_lm[[2]]$r.sq
+anova(m3, m2)
+#比較在控制 月份 下， 年份 的效果
+(res_lm[[2]]$r.sq - res_lm[[1]]$r.sq)/res_lm[[1]]$r.sq
+anova(m1, m2)
+```
+
+### 正式畫圖
+```{r cache=TRUE, warning=FALSE}
+require(coefplot)
+m2 <- lm(cnt ~ mnth + yr -1, data = df) #(-1 將截距去除)
+coefplot(m2, xlab = '估計值', ylab = '迴歸變項', title = '反應變項 = 單車租借量') +
+  theme(axis.title = element_text(color = '#2d2d2d'),
+        strip.text.x =  element_text(color='#2d2d2d',face='bold',size=10),
+        plot.title = element_text(hjust=0.5,face='bold',size=15)) 
+```
+
+### 把資料與迴歸分析的預測值、殘差與影響度放進資料
+```{r cache=TRUE, warning=FALSE}
+fit_m2 <- data.frame(df[, c(16, 5, 4)], fitted = fitted(m2), resid = resid(m2),
+                     infl = influence(m2)$hat )
+```
+
+### 依 月份 疊合真實觀測值與預測值
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = fit_m2, aes(x = cnt, group = mnth )) +
+ stat_density(geom = 'path', position = 'identity') +
+ stat_density(geom = 'path', position = 'identity', aes(x = fitted)) +
+ facet_grid(mnth ~ .) +
+ scale_x_continuous(breaks = seq(0, 8000, by = 1000))+
+ labs(x = '單車租借量', y = '機率密度')
+```
+
+### 看殘差分配，依 月份 檢視常態與變異數同質假設
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = fit_m2, aes(x = scale(resid), col=mnth), group = mnth ) +
+ stat_density(geom = 'path', position = 'identity', aes(linetype = mnth)) +
+ scale_linetype_manual(values = 1:12) +
+ labs(x = '標準化殘差', y = '機率密度') +
+ theme(legend.position = c(.25, .8),legend.direction = "horizontal")
+```
+
+### 看看殘差的 Q-Q 圖，依 月份 檢視常態假設
+```{r cache=TRUE, warning=FALSE}
+require(lattice)
+qqmath(~ scale(resid) | mnth, data = fit_m2, type = c('p', 'g', 'r'),
+       xlab = '常態位數', ylab = '標準化殘差', layout = c(3, 4),
+       pch = '.', cex = 2)
+```
+
+### 畫預測值與殘差的散佈圖，檢查線性與等分散假設
+```{r cache=TRUE, warning=FALSE}
+require(MASS)
+ggplot(data = fit_m2, aes(x = fitted, y = scale(resid), group = mnth )) +
+  geom_point(pch = 20, size = 1) +
+  stat_smooth(method = 'rlm', se = F) +
+  facet_grid(mnth ~ .) +
+  labs(x = '單車租借預測值', y = '標準化殘差')
+```
+
+### 呈現影響值（影響估計結果過大的值）與標準化殘差
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = fit_m2, aes(x = infl, y = scale(resid), group = mnth)) +
+ geom_text(aes(label = rownames(fit_m2)), cex = 2) +
+ geom_hline(yintercept = 0, linetype = 'dotted') +
+ facet_grid(mnth ~ .) +
+ labs(x = '影響值', y = '標準化殘差')
+```
+
+### 看看影響值
+```{r cache=TRUE, warning=FALSE}
+summary(influence(m2)$hat)
+```
+
+---
+
+## Part E. 天氣型態 & 季 vs 單車租借量
+
+---
+
+### 以下觀察 季 是否與 單車租借量 有關
+```{r cache=TRUE, warning=FALSE}
+
+#看不同 季 下的 單車租借量 平均數
+tapply(df$cnt, df$season, mean)
+
+library(Hmisc)
+
+#同 季 下的 單車租借量 平均數，加上信賴區間
+ggplot(data = df, 
+       aes(x = season, y = cnt)) +
+  stat_summary(fun.data = 'mean_cl_boot', size = 1) +
+  scale_y_continuous(breaks = seq(2000, 6000, by = 1000)) +
+  geom_hline(yintercept = mean(df$cnt) , 
+             linetype = 'dotted') +
+  labs(x = '季', y = '單車租借量平均') +
+  coord_flip()
+```
+
+### 在這裡我們推測 季 的效果 可能是 天氣型態 造成的，畫圖觀察看看
+```{r cache=TRUE, warning=FALSE}
+anova(m1 <- lm(cnt ~ season, data = df))
+```
+(註: season表組間, Residuals表組內, Mean Sq = Sum Sq / Df, F value = Mean Sq.mnth/Mean Sq.Residuals)  
+> =>__p-value極小，季效果顯著__
+
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = df, 
+       aes(group = season, 
+          y = cnt, x = weathersit)) +
+  geom_point() +
+  stat_smooth(method = 'lm', se = F) +
+  stat_smooth(aes(group = season, 
+          y = cnt, x = weathersit), 
+          method = 'lm', se = F) + 
+  facet_grid( . ~  season) +
+  labs(x = '天氣型態', y = '單車租借量')
+```
+
+
+### 利用以下 ANOVA 檢驗假設是否正確
+```{r cache=TRUE, warning=FALSE}
+#把 天氣型態 加進模型
+anova(m2 <- update(m1, . ~ . + weathersit, data = df))
+#或許不是 季 而是 天氣型態 造成
+anova(m3 <- update(m2, . ~ . - season,  data = df))
+```
+> =>__p-value極小，兩者效果都顯著__
+
+### 將 ANOVA 結果做成圖表輸出，先計算一些需要的數據
+```{r cache=TRUE, warning=FALSE}
+#將結果放在一個list中
+res_lm <- lapply(list(m1, m2, m3), summary)
+#比較在控制 天氣型態 下， 季 的效果
+(res_lm[[2]]$r.sq - res_lm[[3]]$r.sq)/res_lm[[2]]$r.sq
+anova(m3, m2)
+#比較在控制 季 下， 天氣型態 的效果
+(res_lm[[2]]$r.sq - res_lm[[1]]$r.sq)/res_lm[[1]]$r.sq
+anova(m1, m2)
+```
+
+### 正式畫圖
+```{r cache=TRUE, warning=FALSE}
+require(coefplot)
+m2 <- lm(cnt ~ season + weathersit -1, data = df) #(-1 將截距去除)
+coefplot(m2, xlab = '估計值', ylab = '迴歸變項', title = '反應變項 = 單車租借量') +
+  theme(axis.title = element_text(color = '#2d2d2d'),
+        strip.text.x =  element_text(color='#2d2d2d',face='bold',size=10),
+        plot.title = element_text(hjust=0.5,face='bold',size=15)) 
+```
+
+### 把資料與迴歸分析的預測值、殘差與影響度放進資料
+```{r cache=TRUE, warning=FALSE}
+fit_m2 <- data.frame(df[, c(16, 3, 9)], fitted = fitted(m2), resid = resid(m2), infl = influence(m2)$hat )
+```
+
+### 依 季 疊合真實觀測值與預測值
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = fit_m2, aes(x = cnt, group = season )) +
+ stat_density(geom = 'path', position = 'identity') +
+ stat_density(geom = 'path', position = 'identity', aes(x = fitted, col=season)) +
+ facet_grid(season ~ .) +
+ scale_x_continuous(breaks = seq(0, 8000, by = 1000))+
+ labs(x = '單車租借量', y = '機率密度')
+```
+
+### 看殘差分配，依 季 檢視常態與變異數同質假設
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = fit_m2, aes(x = scale(resid)), group = season ) +
+ stat_density(geom = 'path', position = 'identity', aes(linetype = season, col=season)) +
+ scale_linetype_manual(values = 4:1)  +
+ labs(x = '標準化殘差', y = '機率密度') +
+ theme(legend.position = c(.1, .7))
+```
+
+### 看看殘差的 Q-Q 圖，依 季 檢視常態假設
+```{r cache=TRUE, warning=FALSE}
+require(lattice)
+qqmath(~ scale(resid) | season, data = fit_m2, type = c('p', 'g', 'r'),
+       xlab = '常態位數', ylab = '標準化殘差', layout = c(2, 2),
+       pch = '.', cex = 2)
+```
+
+### 畫預測值與殘差的散佈圖，檢查線性與等分散假設
+```{r cache=TRUE, warning=FALSE}
+require(MASS)
+ggplot(data = fit_m2, aes(x = fitted, y = scale(resid), group = season )) +
+  geom_point(pch = 20, size = 1) +
+  stat_smooth(method = 'rlm', se = F) +
+  facet_grid(season ~ .) +
+  labs(x = '單車租借預測值', y = '標準化殘差')
+```
+
+### 呈現影響值（影響估計結果過大的值）與標準化殘差
+```{r cache=TRUE, warning=FALSE}
+ggplot(data = fit_m2, aes(x = infl, y = scale(resid), group = season)) +
+ geom_text(aes(label = rownames(fit_m2)), cex = 2) +
+ geom_hline(yintercept = 0, linetype = 'dotted') +
+ facet_grid(season ~ .) +
+ labs(x = '影響值', y = '標準化殘差')
+```
+
+### 看看影響值
+```{r cache=TRUE, warning=FALSE}
+summary(influence(m2)$hat)
+```
+
+---
+
+## Part F. 接下來分析資料集當中的其他變項是否和 單車租借量 有關
+
+---
+
+```{r cache=TRUE, warning=FALSE}
+df_cnt <- df[, c('cnt', 
+                 'temp', 'atemp', 'hum', 'windspeed')]
+```
+
+### 看看基本統計量
+```{r cache=TRUE, warning=FALSE}
+colMeans(df_cnt)
+```
+
+### 呈現兩兩散佈圖
+```{r cache=TRUE, warning=FALSE, message=FALSE}
+require(heplots)
+scatterplotMatrix(~ cnt + temp + atemp + hum + windspeed, data= df_cnt,
+  pch = '.', cex = 3, smooth = FALSE, reg.line = FALSE, ellipse = TRUE,
+  diagonal = 'none', lower.panel = NULL)
+
+```
+
+### 利用corrplot 套件，以圖形顯示相關性的大小
+```{r cache=TRUE, warning=FALSE, message=FALSE}
+require(corrplot)
+corrplot(cor(df_cnt), method = 'ellipse', order = 'hclust', addrect = 5,
+         type = 'upper', tl.pos = 'tpd')
+corrplot(cor(df_cnt), add = TRUE, type = 'lower', method = 'number',
+         order = 'hclust', col = 'black', diag = FALSE, tl.pos = 'n', cl.pos = 'n')
+```
+
+### 放進四個解釋變項
+```{r cache=TRUE, warning=FALSE}
+summary(m4 <- lm(cnt ~ temp + atemp + hum + windspeed, data = df_cnt))
+```
+> => __氣溫不顯著但體感溫度、濕度、風速是顯著的，說明人體感受才是影響騎車意願比較大的原因__
+
+### 來看看效果如何
+```{r cache=TRUE, warning=FALSE, message=FALSE}
+coefplot(m4, predictors = c('temp', 'atemp', 'hum', 'windspeed'),
+ xlab = '估計值', ylab = '迴歸變項(去除截距)', title = '反應變項 = 單車租借量') +
+  theme(axis.title = element_text(color = '#2d2d2d'),
+        strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
+        plot.title = element_text(hjust=0.5,face='bold',size=15)) 
+```
+
+```{r, warning=FALSE}
+library(effects)
+plot(allEffects(m4), main = '', ylim = c(0, 8000), grid = T)
+```
+
+### 利用 lm.beta 套件，計算標準化迴歸係數
+```{r, warning=FALSE}
+library(lm.beta)
+summary(lm.beta(m4))
+```
+
+### 看看控制 體感溫度、濕度、風速 後，氣溫的效果
+```{r cache=TRUE, warning=FALSE}
+summary(m5 <- update(m4, . ~ . - temp , data = df_cnt))
+anova(m5, m4)
+```
+> =>__決定移除temp項目__
+
+---
+
+## Part G.  組合嘗試 
+
+---
+> 單車租借量 ~ 體感溫度 + 濕度 + 風速 + 年份
+
+```{r}
+m5 <- lm(cnt ~ atemp + hum + windspeed + yr, data = df)
+fit_m5 <- data.frame(df[, c(16, 11, 12, 13, 4)], fitted = fitted(m5), resid = resid(m5), infl = influence(m5)$hat)
+
+ggplot(data = fit_m5, aes(x = cnt)) +
+ stat_density(geom = 'path', position = 'identity') +
+ stat_density(geom = 'path', position = 'identity', col='red', aes(x = fitted)) +
+ scale_x_continuous(breaks = seq(0, 8000, by = 1000)) +
+ labs(x = '單車租借量', y = '機率密度')
+
+plot(allEffects(m5), main = '', ylim = c(0, 8000), grid = T)
+
+summary(lm.beta(m5))
+```
+
+> 單車租借量 ~ 體感溫度 + 年份 + 天氣型態 
+
+```{r}
+m6 <- lm(cnt ~ atemp + yr + weathersit , data = df)
+fit_m6 <- data.frame(df[, c(16, 11, 4, 9)], fitted = fitted(m6), resid = resid(m6), infl = influence(m6)$hat)
+
+ggplot(data = fit_m6, aes(x = cnt)) +
+ stat_density(geom = 'path', position = 'identity') +
+ stat_density(geom = 'path', position = 'identity', col='red', aes(x = fitted)) +
+ scale_x_continuous(breaks = seq(0, 8000, by = 1000)) +
+ labs(x = '單車租借量', y = '機率密度')
+
+plot(allEffects(m6), main = '', ylim = c(0, 8000), grid = T)
+
+summary(lm.beta(m6))
+```
+
+> 單車租借量 ~ 體感溫度 + 年份 + 天氣型態 + 星期 + 工作日 
+
+```{r}
+m7 <- lm(cnt ~ atemp + yr + weathersit + weekday + workingday, data = df)
+fit_m7 <- data.frame(df[, c(16, 11, 4, 9, 7, 8)], fitted = fitted(m7), resid = resid(m7), infl = influence(m7)$hat)
+
+ggplot(data = fit_m7, aes(x = cnt)) +
+ stat_density(geom = 'path', position = 'identity') +
+ stat_density(geom = 'path', position = 'identity', col='red', aes(x = fitted)) +
+ scale_x_continuous(breaks = seq(0, 8000, by = 1000)) +
+ labs(x = '單車租借量', y = '機率密度')
+
+plot(allEffects(m7), main = '', ylim = c(0, 8000), grid = T)
+
+summary(lm.beta(m7))
+```
+### 看控制其他項目，星期的效果
+```{r}
+summary(m8 <- update(m7, . ~ . - weekday , data = df))
+anova(m8, m7)
+```
+
+### 結論
+- 兩年內單車租借量成長迅速
+- 單車租借量 與 體感溫度 & 天氣型態  有極大的關係，而體感溫度更直接包含了月份和季節因素在內
+- 單車租借量 與 濕度 & 風速 的關係不大
+- 有些因子(ex: weekday, workingday)雖然不顯著，但加入模型卻有助於使機率密度函數趨於平緩
