@@ -6,9 +6,11 @@ output: html_document
 
 所有的假設(null hypothesis)都是建立在"等於"上(平等)
 
-p<0.05 p夠小(顯著)表示反駁的證據足夠(95%)，推翻等於假設 => 有相異性
+p<0.05 p夠小表示反駁的證據足夠(95%)，推翻等於假設 => 顯著(有相異性)
 
-p>0.05 p太大(不顯著)表示證據不足(<95%)，無法推翻等於假設 => 無相異性
+p>0.05 p太大表示證據不足(<95%)，無法推翻等於假設 => 不顯著(無相異性)
+
+ANOVA（Analysis of variance）變異數分析
 
 
 ```{r}
@@ -18,7 +20,6 @@ library(ggridges)
 library(plotly)
 library(tidytext)
 library(Hmisc)
-
 ```
 
 ```{r}
