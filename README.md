@@ -65,7 +65,12 @@ NTU CS+X 全國夏季學院 資料科學程式設計
   - At home
     - hw4
 
-
+## Week 5
+- [投影片](https://goo.gl/W9W7qU)
+- 進度:
+  - In class
+  
+  - At home
 
 ## Reference
 - [【NTU CS+X】資料科學程式設計](https://n2-data-science-programming.gitbook.io/rsummer/)
