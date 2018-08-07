@@ -36,6 +36,11 @@ idfCal <- function(word_doc)
   log2( n / nnzero(word_doc) ) 
 }
 
+#Cosine Similiarity
+cos <- function(x, y){
+  return (x %*% y / sqrt(x %*% x * y %*% y))[1, 1]
+}
+
 ###
 # EXAMPLE A (唐詩三百首中 各tag詩數量統計) (畫長條圖)
 # parameters: None
@@ -61,7 +66,7 @@ ggplot(tag_count, aes(x = reorder(x,-freq), y = freq)) +
 ###
 
 # 選擇tag類別
-input.tag = '女子'
+input.tag = '愛情'
 tag_author_count <- dta %>% filter(str_detect(tag, input.tag)) %>% select(author) %>% 
   unlist() %>% count
 
@@ -114,8 +119,7 @@ tempX_tag = matrix(rep(c(as.matrix(idf_tag)), each = length(tf_tag)),
                    ncol = length(tf_tag), byrow = TRUE)
 doc.tfidf_tag[,2:(n+1)] <- (doc.tfidf_tag[,2:(n+1)] / tempY_tag) * tempX_tag
 
-#4. 畫各tag前(十)多用字
-
+#4. 畫各tag前(十)多用字 (input.tag)
 
 words_count_tag = TDM_tag[,c('d', input.tag)]
 colnames(words_count_tag) = c('word', 'count')
@@ -134,7 +138,44 @@ ggplot(words_count_tag[1:20,], aes(x = reorder(word, count), y =count)) +
         plot.title = element_text(hjust=0.5,face='bold',size=15))
 
 
-##
-rownames(doc.tfidf) = doc.tfidf$d
-doc.tfidf <- doc.tfidf[,1:n+1]
+#5. 找前10相似 (input.tag)
+rownames(doc.tfidf_tag) = doc.tfidf_tag$d
+doc.tfidf_tag <- doc.tfidf_tag[,1:n_tag+1]
+docs.cos.sim_tag <- apply(doc.tfidf_tag, 2, cos, y = doc.tfidf_tag[, c(input.tag)])
+sort(docs.cos.sim_tag, decreasing = TRUE)[1:10]
+
+#6. 唐詩三百首文字雲 (所有tag相加)
+
+#BY tf-idf
+f_tag <- sort(rowSums(doc.tfidf_tag), decreasing = T)
+docs.df_tag <- data.frame(
+  word = names(f_tag),
+  freq = f_tag
+)
+row.names(docs.df_tag)=NULL
+wordcloud(docs.df_tag$word, docs.df_tag$freq, scale=c(3,0.1),max.words=50,
+          random.order=FALSE, random.color=TRUE, 
+          rot.per=.1, colors=brewer.pal(12,"Dark2"),
+          ordered.colors=FALSE,use.r.layout=FALSE,
+          fixed.asp=TRUE)
+
+#7. PCA
+pcat_tag = prcomp(t(doc.tfidf_tag))
+g <- ggbiplot(pcat_tag, obs.scale = 1, var.scale = 1, ellipse = TRUE, circle = TRUE)
+
+fviz_eig(pcat_tag)
+fviz_pca_ind(pcat_tag, geom= c("point","text","arrow"), col.ind = "cos2")
+fviz_pca_var(pcat_tag, col.var = "contrib")
+
+#8. Kmeans
+kmeansData_tag = pcat_tag$x[,1:2]
+# kmeansData = kmeansData[kmeansData[,1] > -0.05, ]
+
+cl_tag <- kmeans(kmeansData_tag, 5)
+kmeansData_tag <- as.data.frame(kmeansData_tag) 
+kmeansData_tag$cl <- as.factor(cl_tag$cluster)
+
+plot_ly(kmeansData_tag, x= ~PC1, y=~PC2, type='scatter',
+        mode='text', text=paste0("<b>",rownames(kmeansData_tag),"</b>"), 
+        color = ~cl, colors="Set1", textfont = list(size = 14) )
 
