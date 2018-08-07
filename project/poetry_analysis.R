@@ -168,10 +168,14 @@ fviz_pca_ind(pcat_tag, geom= c("point","text","arrow"), col.ind = "cos2")
 fviz_pca_var(pcat_tag, col.var = "contrib")
 
 #8. Kmeans
+# parameter: k_tag
+
+k_tag = 5
+
 kmeansData_tag = pcat_tag$x[,1:2]
 # kmeansData = kmeansData[kmeansData[,1] > -0.05, ]
 
-cl_tag <- kmeans(kmeansData_tag, 5)
+cl_tag <- kmeans(kmeansData_tag, k_tag)
 kmeansData_tag <- as.data.frame(kmeansData_tag) 
 kmeansData_tag$cl <- as.factor(cl_tag$cluster)
 
@@ -179,3 +183,107 @@ plot_ly(kmeansData_tag, x= ~PC1, y=~PC2, type='scatter',
         mode='text', text=paste0("<b>",rownames(kmeansData_tag),"</b>"), 
         color = ~cl, colors="Set1", textfont = list(size = 14) )
 
+###
+# EXAMPLE C 
+# parameters: input.author
+###
+
+#1. 建立文本資料結構與基本文字清洗
+d.corpus_author <- Corpus(DirSource("./data/tang300/by_author", encoding = "UTF-8"))
+d.corpus_author <- tm_map(d.corpus_author, stripWhitespace) #消除空格
+d.corpus_author <- tm_map(d.corpus_author, removeNumbers) #移除數字
+d.corpus_author <- tm_map(d.corpus_author, removePunctuation) #移除標點符號
+d.corpus_author <- tm_map(d.corpus_author, function(word) { # 移除英數
+  gsub("[A-Za-z0-9]", "", word)
+})
+
+#2. 進行斷詞，並建立文本矩陣 TermDocumentMatrix
+seg_author = lapply(d.corpus_author, jieba_tokenizer)
+tokens_author = lapply(seg_author, count_token)
+
+#TDM
+n_author = length(seg_author)
+TDM_author = tokens_author[[1]]
+authorNames <- list.files('./data/tang300/by_author')
+authorNames <- gsub(".txt", "", authorNames) #取代
+for( id in c(2:n_author) )
+{
+  TDM_author = merge(TDM_author, tokens_author[[id]], by="d", all = TRUE)
+  names(TDM_author) = c('d', authorNames[1:id])
+}
+TDM_author[is.na(TDM_author)] <- 0 #將NA填0
+
+#3. 將已建好的 TDM 轉成 TF-IDF
+tf_author <- apply(as.matrix(TDM_author[,2:(n_author + 1)]), 2, sum) #直向相加計算總數
+idf_author <- apply(as.matrix(TDM_author[,2:(n_author + 1)]), 1, idfCal)
+doc.tfidf_author <- TDM_author
+
+tempY_author = matrix(rep(c(as.matrix(tf_author)), each = length(idf_author)), 
+                   nrow = length(idf_author))
+tempX_author = matrix(rep(c(as.matrix(idf_author)), each = length(tf_author)), 
+                   ncol = length(tf_author), byrow = TRUE)
+doc.tfidf_author[,2:(n+1)] <- (doc.tfidf_author[,2:(n+1)] / tempY_author) * tempX_author
+
+#4. 畫各author前(十)多用字 (input.author)
+
+words_count_author = TDM_author[,c('d', input.author)]
+colnames(words_count_author) = c('word', 'count')
+words_count_author = words_count_author[rev(order(words_count_author$count)),]
+rownames(words_count_author)=NULL
+
+
+ggplot(words_count_author[1:20,], aes(x = reorder(word, count), y =count)) + 
+  geom_bar(stat = "identity", fill='lightblue') + 
+  coord_flip()+
+  labs(x='word', y='count', title=paste('Author: ', input.author)) +
+  theme(panel.background = element_blank(),
+        axis.title = element_text(color = '#2d2d2d'),
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
+        plot.title = element_text(hjust=0.5,face='bold',size=15))
+
+
+#5. 找前10相似 (input.author)
+rownames(doc.tfidf_author) = doc.tfidf_author$d
+doc.tfidf_author <- doc.tfidf_author[,1:n_author+1]
+docs.cos.sim_author <- apply(doc.tfidf_author, 2, cos, y = doc.tfidf_author[, c(input.author)])
+sort(docs.cos.sim_author, decreasing = TRUE)[1:10]
+
+#6. 唐詩三百首文字雲 (所有author相加)
+
+#BY tf-idf
+f_author <- sort(rowSums(doc.tfidf_author), decreasing = T)
+docs.df_author <- data.frame(
+  word = names(f_author),
+  freq = f_author
+)
+row.names(docs.df_author)=NULL
+wordcloud(docs.df_author$word, docs.df_author$freq, scale=c(3,0.1),max.words=50,
+          random.order=FALSE, random.color=TRUE, 
+          rot.per=.1, colors=brewer.pal(12,"Dark2"),
+          ordered.colors=FALSE,use.r.layout=FALSE,
+          fixed.asp=TRUE)
+
+#7. PCA
+pcat_author = prcomp(t(doc.tfidf_author))
+g <- ggbiplot(pcat_author, obs.scale = 1, var.scale = 1, ellipse = TRUE, circle = TRUE)
+
+fviz_eig(pcat_author)
+fviz_pca_ind(pcat_author, geom= c("point","text","arrow"), col.ind = "cos2")
+fviz_pca_var(pcat_author, col.var = "contrib")
+
+#8. Kmeans
+# parameter: k_author
+
+k_author = 5
+
+kmeansData_author = pcat_author$x[,1:2]
+# kmeansData = kmeansData[kmeansData[,1] > -0.05, ]
+
+cl_author <- kmeans(kmeansData_author, k_author)
+kmeansData_author <- as.data.frame(kmeansData_author) 
+kmeansData_author$cl <- as.factor(cl_author$cluster)
+
+plot_ly(kmeansData_author, x= ~PC1, y=~PC2, type='scatter',
+        mode='text', text=paste0("<b>",rownames(kmeansData_author),"</b>"), 
+        color = ~cl, colors="Set1", textfont = list(size = 14) )
