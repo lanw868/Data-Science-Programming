@@ -31,7 +31,7 @@ count_token = function(d)
   as.data.frame(table(d))
 }
 
-idfCal <- function(word_doc)
+idfCal <- function(word_doc, n)
 { 
   log2( n / nnzero(word_doc) ) 
 }
@@ -110,7 +110,7 @@ TDM_tag[is.na(TDM_tag)] <- 0 #將NA填0
 
 #3. 將已建好的 TDM 轉成 TF-IDF
 tf_tag <- apply(as.matrix(TDM_tag[,2:(n_tag + 1)]), 2, sum) #直向相加計算總數
-idf_tag <- apply(as.matrix(TDM_tag[,2:(n_tag + 1)]), 1, idfCal)
+idf_tag <- apply(as.matrix(TDM_tag[,2:(n_tag + 1)]), 1, idfCal, n = n_tag)
 doc.tfidf_tag <- TDM_tag
 
 tempY_tag = matrix(rep(c(as.matrix(tf_tag)), each = length(idf_tag)), 
@@ -215,7 +215,7 @@ TDM_author[is.na(TDM_author)] <- 0 #將NA填0
 
 #3. 將已建好的 TDM 轉成 TF-IDF
 tf_author <- apply(as.matrix(TDM_author[,2:(n_author + 1)]), 2, sum) #直向相加計算總數
-idf_author <- apply(as.matrix(TDM_author[,2:(n_author + 1)]), 1, idfCal)
+idf_author <- apply(as.matrix(TDM_author[,2:(n_author + 1)]), 1, idfCal, n=n_author)
 doc.tfidf_author <- TDM_author
 
 tempY_author = matrix(rep(c(as.matrix(tf_author)), each = length(idf_author)), 
