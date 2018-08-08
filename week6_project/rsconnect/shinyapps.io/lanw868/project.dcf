@@ -1,0 +1,13 @@
+name: project
+title: project
+username:
+account: lanw868
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 396854
+bundleId: 1523948
+url: https://lanw868.shinyapps.io/project/
+when: 1533692351.44376
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: test_3in1.py
