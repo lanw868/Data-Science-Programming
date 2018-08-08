@@ -19,7 +19,7 @@ NTU CS+X 全國夏季學院 資料科學程式設計
   - [hw4_EDA + Regression](http://lanw868.github.io/Data-Science-Programming/week4/Regression_bike-sharing.html)
 - Final project
   - Poetry_analysis 數據唐詩
-    - [Slides](https://github.com/lanw868/Data-Science-Programming/blob/master/week6_project/project.pdf)
+    - [Slides](https://github.com/lanw868/Data-Science-Programming/blob/master/week6_project_demo/project.pdf)
     - [Code & Data](https://github.com/lanw868/Data-Science-Programming/tree/master/week6_project_demo)
 
 ## Week 1
