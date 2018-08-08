@@ -20,7 +20,7 @@ NTU CS+X 全國夏季學院 資料科學程式設計
 - week 6
   - Final project: Poetry_analysis
     - [Slides](https://github.com/lanw868/Data-Science-Programming/blob/master/week6_project/project.pdf)
-    - [Code]()
+    - [Code & Data](https://github.com/lanw868/Data-Science-Programming/tree/master/week6_project_demo)
 
 ## Week 1
 - [投影片](https://goo.gl/uGUiJk)  
@@ -77,6 +77,7 @@ NTU CS+X 全國夏季學院 資料科學程式設計
   - At home
 
 ## Reference
+- [課程github](https://n2-data-science-programming.gitbook.io/rsummer/)
 - [【NTU CS+X】資料科學程式設計](https://n2-data-science-programming.gitbook.io/rsummer/)
 - [R 語言導論 （中文版）](https://www.datacamp.com/community/open-courses/r-%E8%AA%9E%E8%A8%80%E5%B0%8E%E8%AB%96)
 - [Intermediate R](https://www.datacamp.com/courses/intermediate-r)
