@@ -1,21 +1,8 @@
-##Packages =====
-library(shiny)
-library(ggplot2)
-library(tidyverse)
-library(tm)
-library(jiebaR)
-library(Matrix)
-library(wordcloud)
-library(ggbiplot)
-library(factoextra)
-library(plotly)
+source('global.R', local = TRUE)
 
 ##Program ==================================================================
-
-# 讀檔
-dta <- read.csv(file = "data/tang300/tang300_utf-8.csv", fileEncoding = "UTF-8",
+dta <- read.csv(file = "./data/tang300/tang300_utf-8.csv", fileEncoding = "UTF-8",
                 stringsAsFactors=F)
-#轉成類別型態
 dta[,'author'] = as.factor(dta[,'author'])
 dta[,'style'] = as.factor(dta[,'style'])
 
@@ -40,27 +27,6 @@ authorNames_list = c("元結","元稹","王之渙","王昌齡","王勃","王建"
                      "駱賓王","戴叔倫","薛逢","韓翃","韓偓","韓愈",
                      "顧況","權德輿")
 
-# FUNCTIONS
-mixseg = worker()
-jieba_tokenizer = function(d)
-{
-  unlist( segment(d[[1]], mixseg) )
-}
-
-count_token = function(d)
-{
-  as.data.frame(table(d))
-}
-
-idfCal <- function(word_doc, n)
-{ 
-  log2( n / nnzero(word_doc) ) 
-}
-
-#Cosine Similiarity
-cos <- function(x, y){
-  return (x %*% y / sqrt(x %*% x * y %*% y))[1, 1]
-}
 
 ###
 # EXAMPLE A (唐詩三百首中 各tag詩數量統計) (畫長條圖)
@@ -77,7 +43,8 @@ ggplot(tag_count, aes(x = reorder(x,-freq), y = freq)) +
   labs(x='tag',title='唐詩三百首數量統計') + 
   theme(panel.background = element_blank(),
         axis.title = element_text(color = '#2d2d2d'),
-        axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.text.x = element_text(hjust = 1, size=15),
+        axis.text.y = element_text(hjust = 1, size=15),
         strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
         plot.title = element_text(hjust=0.5,face='bold',size=15))
 
@@ -153,7 +120,8 @@ ggplot(words_count_tag[1:20,], aes(x = reorder(word, count), y =count)) +
   labs(x='word', y='count', title=paste('Tag: ', input.tag)) +
   theme(panel.background = element_blank(),
         axis.title = element_text(color = '#2d2d2d'),
-        axis.text.x = element_text(angle = 90, hjust = 1),
+        axis.text.x = element_text(hjust = 1, size=15),
+        axis.text.y = element_text(hjust = 1, size=15),
         strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
         plot.title = element_text(hjust=0.5,face='bold',size=15))
 
@@ -175,7 +143,7 @@ docs.df_tag <- data.frame(
 row.names(docs.df_tag)=NULL
 wordcloud(docs.df_tag$word, docs.df_tag$freq, scale=c(3,0.1),max.words=50,
           random.order=FALSE, random.color=TRUE, 
-          rot.per=.1, colors=brewer.pal(12,"Dark2"),
+          rot.per=.1, colors=brewer.pal(8,"Dark2"),
           ordered.colors=FALSE,use.r.layout=FALSE,
           fixed.asp=TRUE)
 
@@ -250,16 +218,16 @@ colnames(words_count_author) = c('word', 'count')
 words_count_author = words_count_author[rev(order(words_count_author$count)),]
 rownames(words_count_author)=NULL
 
-
 ggplot(words_count_author[1:20,], aes(x = reorder(word, count), y =count)) + 
-  geom_bar(stat = "identity", fill='lightblue') + 
-  coord_flip()+
-  labs(x='word', y='count', title=paste('Author: ', input.author)) +
-  theme(panel.background = element_blank(),
-        axis.title = element_text(color = '#2d2d2d'),
-        axis.text.x = element_text(angle = 90, hjust = 1),
-        strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
-        plot.title = element_text(hjust=0.5,face='bold',size=15))
+        geom_bar(stat = "identity", fill='lightblue') + 
+        coord_flip()+
+        labs(x='word', y='count', title=paste('Author: ', input.author)) +
+        theme(panel.background = element_blank(),
+              axis.title = element_text(color = '#2d2d2d'),
+              axis.text.x = element_text(hjust = 1, size=15),
+              axis.text.y = element_text(hjust = 1, size=15),
+              strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
+              plot.title = element_text(hjust=0.5,face='bold',size=15))
 
 
 #5. 找前10相似 (input.author)
@@ -279,7 +247,7 @@ docs.df_author <- data.frame(
 row.names(docs.df_author)=NULL
 wordcloud(docs.df_author$word, docs.df_author$freq, scale=c(3,0.1),max.words=50,
           random.order=FALSE, random.color=TRUE, 
-          rot.per=.1, colors=brewer.pal(12,"Dark2"),
+          rot.per=.1, colors=brewer.pal(8,"Dark2"),
           ordered.colors=FALSE,use.r.layout=FALSE,
           fixed.asp=TRUE)
 
@@ -303,9 +271,21 @@ cl_author <- kmeans(kmeansData_author, k_author)
 kmeansData_author <- as.data.frame(kmeansData_author) 
 kmeansData_author$cl <- as.factor(cl_author$cluster)
 
-plot_ly(kmeansData_author, x= ~PC1, y=~PC2, type='scatter',
+plot_ly(kmeansData_author, x=~PC1, y=~PC2, type='scatter',
         mode='text', text=paste0("<b>",rownames(kmeansData_author),"</b>"), 
         color = ~cl, colors="Set1", textfont = list(size = 14) )
+
+# plot_ly(kmeansData_author, x=kmeansData_author$PC1, y=kmeansData_author$PC2, 
+#         type='scatter', mode='text', text=authorNames_list)
+# 
+# plot_ly(kmeansData_tag, x= ~PC1, y=~PC2, type='scatter',
+#         mode='text', text=tagNames_list)
+# 
+# plot_ly(kmeansData_tag, x= ~PC1, y=~PC2, type='scatter',
+#         mode='text', text=paste0("<b>",rownames(kmeansData_tag),"</b>"), 
+#         color = ~cl, colors="Set1", textfont = list(size = 14) )
+
+
 
 ##UI =======================================================================
 ui <- navbarPage(
@@ -323,7 +303,8 @@ ui <- navbarPage(
      tags$h4("本次專題透過資料分析找出【唐詩】中："),br(),
      tags$h4("【詞彙之間】、【詞彙與詩人之間】的相關性"),br(),
      tags$h4("以探討詞彙之間的關聯程度，"),br(),
-     tags$h4("及作者生平、性格與常用字詞的關係。"),br()
+     tags$h4("及作者生平、性格與常用字詞的關係。"),br(),
+     tags$h5("資料來源： 詩詞名句網 http://www.shicimingju.com/")
    ),
    tabPanel(
      "文字雲",
@@ -402,6 +383,10 @@ ui <- navbarPage(
      )
    )
 )
+# 
+# library(showtext)
+# showtext_auto(enable = TRUE)
+# font_add("康熙字典體", "康熙字典體.otf")
 
 ##SERVER =====================================================================
 server <- function(input, output) {
@@ -411,60 +396,83 @@ server <- function(input, output) {
     colnames(words_count_author) = c('word', 'count')
     words_count_author = words_count_author[rev(order(words_count_author$count)),]
     rownames(words_count_author)=NULL
-    ggplot(words_count_author[1:20,], aes(x = reorder(word, count), y =count)) + 
-      geom_bar(stat = "identity", fill='lightblue') + 
-      coord_flip()+
-      labs(x='word', y='count', title=paste('Author: ', input.author)) +
-      theme(panel.background = element_blank(),
-            axis.title = element_text(color = '#2d2d2d'),
-            axis.text.x = element_text(angle = 90, hjust = 1),
-            strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
-            plot.title = element_text(hjust=0.5,face='bold',size=15))
+    showtext.begin()
+    print(ggplot(words_count_author[1:20,], aes(x = reorder(word, count), y =count)) + 
+          geom_bar(stat = "identity", fill='lightblue') + 
+          coord_flip() +
+          labs(x='word', y='count', title=paste('Author: ', input.author)) +
+          theme(panel.background = element_blank(),
+                axis.title = element_text(color = '#2d2d2d'),
+                axis.text.x = element_text(hjust = 1, size=15),
+                axis.text.y = element_text(hjust = 1, size=15),
+                strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
+                plot.title = element_text(hjust=0.5,face='bold',size=15)))
+    showtext.end()
   })
   output$WordCloud_1 <- renderPlot({
-    wordcloud(docs.df_author$word, docs.df_author$freq, scale=c(3,0.1),max.words=input$wc_max,
-              random.order=FALSE, random.color=TRUE, 
-              rot.per=.1, colors=brewer.pal(12,"Dark2"),
-              ordered.colors=FALSE,use.r.layout=FALSE,
-              fixed.asp=TRUE)
+    showtext.begin()
+    print(wordcloud(docs.df_author$word, docs.df_author$freq, scale=c(5,0.8),max.words=input$wc_max,
+                    random.order=FALSE, random.color=TRUE, 
+                    rot.per=.1, colors=brewer.pal(8,"Dark2"),
+                    ordered.colors=FALSE,use.r.layout=FALSE,
+                    fixed.asp=TRUE))
+    showtext.end()
   })
   output$Plot_2 <- renderPlot({
     input.tag = input$tag_1
-    ggplot(words_count_tag[1:20,], aes(x = reorder(word, count), y =count)) + 
-      geom_bar(stat = "identity", fill='lightblue') + 
-      coord_flip()+
-      labs(x='word', y='count', title=paste('此類別的常用字 Tag: ', input.tag)) +
-      theme(panel.background = element_blank(),
-            axis.title = element_text(color = '#2d2d2d'),
-            axis.text.x = element_text(angle = 90, hjust = 1),
-            strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
-            plot.title = element_text(hjust=0.5,face='bold',size=15))
+    
+    words_count_tag = TDM_tag[,c('d', input.tag)]
+    colnames(words_count_tag) = c('word', 'count')
+    words_count_tag = words_count_tag[rev(order(words_count_tag$count)),]
+    rownames(words_count_tag)=NULL
+    showtext.begin()
+    print(ggplot(words_count_tag[1:20,], aes(x = reorder(word, count), y =count)) + 
+          geom_bar(stat = "identity", fill='lightblue') + 
+          coord_flip()+
+          labs(x='word', y='count', title=paste('此類別的常用字 Tag: ', input.tag)) +
+          theme(panel.background = element_blank(),
+                axis.title = element_text(color = '#2d2d2d'),
+                axis.text.x = element_text(hjust = 1, size=15),
+                axis.text.y = element_text(hjust = 1, size=15),
+                strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
+                plot.title = element_text(hjust=0.5,face='bold',size=15)))
+    showtext.end()
   })
   output$Plot_3 <- renderPlot({
     input.tag = input$tag_1
     tag_author_count <- dta %>% filter(str_detect(tag, input.tag)) %>% select(author) %>% 
       unlist() %>% count
-    
-    ggplot(tag_author_count, aes(x = reorder(x,-freq), y = freq)) + 
-      geom_bar(stat = "identity", fill='lightblue') + 
-      labs(x='作者',title=paste('此類別的詩人及詩作數量 Tag: ',input.tag)) + 
-      theme(panel.background = element_blank(),
-            axis.title = element_text(color = '#2d2d2d'),
-            strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
-            plot.title = element_text(hjust=0.5,face='bold',size=15))
+    showtext.begin()
+    print(ggplot(tag_author_count, aes(x = reorder(x, freq), y = freq)) + 
+          geom_bar(stat = "identity", fill='lightblue') + 
+          coord_flip()+
+          labs(x='作者',title=paste('此類別的詩人及詩作數量 Tag: ',input.tag)) + 
+          theme(panel.background = element_blank(),
+                axis.title = element_text(color = '#2d2d2d'),
+                axis.text.x = element_text(hjust = 1, size=15),
+                axis.text.y = element_text(hjust = 1, size=15),
+                strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
+                plot.title = element_text(hjust=0.5,face='bold',size=15)))
+    showtext.end()
   })
   output$Plot_4 <- renderPlot({
-    ggplot(tag_count, aes(x = reorder(x,-freq), y = freq)) + 
-      geom_bar(stat = "identity", fill='lightblue') + 
-      labs(x='tag',title='各類別唐詩數量統計') + 
-      theme(panel.background = element_blank(),
-            axis.title = element_text(color = '#2d2d2d'),
-            axis.text.x = element_text(angle = 90, hjust = 1),
-            strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
-            plot.title = element_text(hjust=0.5,face='bold',size=15))
+    showtext.begin()
+    print(ggplot(tag_count, aes(x = reorder(x, freq), y = freq)) + 
+          geom_bar(stat = "identity", fill='lightblue') + 
+          coord_flip() + 
+          labs(x='tag',title='各類別唐詩數量統計') + 
+          theme(panel.background = element_blank(),
+                axis.title = element_text(color = '#2d2d2d'),
+                axis.text.x = element_text(hjust = 1, size=15),
+                axis.text.y = element_text(hjust = 1, size=15),
+                strip.text.x = element_text(color='#2d2d2d',face='bold',size=10),
+                plot.title = element_text(hjust=0.5,face='bold',size=15)))
+    showtext.end()
   })
   output$Plotly_KM1 <- renderPlotly({
     k_author = input$k1
+    
+    # kmeansData_author = pcat_author$x[,1:2]
     
     cl_author <- kmeans(kmeansData_author, k_author)
     kmeansData_author <- as.data.frame(kmeansData_author) 
@@ -477,8 +485,7 @@ server <- function(input, output) {
   output$Plotly_KM2 <- renderPlotly({
     k_tag = input$k2
     
-    kmeansData_tag = pcat_tag$x[,1:2]
-    # kmeansData = kmeansData[kmeansData[,1] > -0.05, ]
+    # kmeansData_tag = pcat_tag$x[,1:2]
     
     cl_tag <- kmeans(kmeansData_tag, k_tag)
     kmeansData_tag <- as.data.frame(kmeansData_tag) 
@@ -490,9 +497,9 @@ server <- function(input, output) {
   })
   
 }
-fviz_eig(pcat_author)
-fviz_pca_ind(pcat_author, geom= c("point","text","arrow"), col.ind = "cos2")
-fviz_pca_var(pcat_author, col.var = "contrib")
+# fviz_eig(pcat_author)
+# fviz_pca_ind(pcat_author, geom= c("point","text","arrow"), col.ind = "cos2")
+# fviz_pca_var(pcat_author, col.var = "contrib")
 # Run the application 
 shinyApp(ui = ui, server = server)
 
