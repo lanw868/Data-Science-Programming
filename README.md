@@ -21,6 +21,7 @@ NTU CS+X 全國夏季學院 資料科學程式設計
   - Poetry_analysis 數據唐詩
     - [Slides](https://github.com/lanw868/Data-Science-Programming/blob/master/week6_project_demo/project.pdf)
     - [Code & Data](https://github.com/lanw868/Data-Science-Programming/tree/master/week6_project_demo)
+    - [Shiny](https://lanw868.shinyapps.io/poetry_analysis/)
 
 ## Week 1
 - [投影片](https://goo.gl/uGUiJk)  
@@ -73,8 +74,8 @@ NTU CS+X 全國夏季學院 資料科學程式設計
 - [投影片](https://goo.gl/W9W7qU)
 - 進度:
   - In class
-  
-  - At home
+    - Scrum 講座
+    - Shiny 介紹
 
 ## Reference
 - [課程github](https://n2-data-science-programming.gitbook.io/rsummer/)
